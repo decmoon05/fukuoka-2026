@@ -78,6 +78,18 @@
   .move{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#475569;background:#eef1f5;
     border:1px solid #e1e6ee;border-radius:8px;padding:3px 8px;margin:6px 0 0;}
   .move svg{width:12px;height:12px;opacity:.7;}
+  .movecard{margin-top:8px;background:#f7f9fb;border:1px solid #e6ebf0;border-radius:12px;padding:10px;}
+  .movestrip{display:flex;align-items:center;overflow-x:auto;padding-bottom:3px;-webkit-overflow-scrolling:touch;}
+  .mvnode{flex:none;font-size:11px;font-weight:800;color:#1f2a37;background:#fff;border:1px solid #d7dee6;border-radius:8px;padding:5px 8px;white-space:nowrap;}
+  .mvnode.start{background:#eef3f1;border-color:#cfe0db;}
+  .mvseg{flex:none;display:flex;flex-direction:column;align-items:center;min-width:80px;padding:0 2px;}
+  .mvseg .mvlabel{font-size:9.5px;font-weight:800;color:var(--lc,#667);white-space:nowrap;margin-bottom:3px;}
+  .mvseg .mvline{height:4px;width:88%;border-radius:2px;background:var(--lc,#999);}
+  .mvseg.walk .mvline{height:0;border-top:3px dotted #b3bcc6;background:none;}
+  .mvseg .mvmin{font-size:9px;color:#8a93a0;font-weight:700;margin-top:3px;}
+  .movetotal{font-size:11px;color:#5b6672;font-weight:700;margin-top:8px;}
+  .movebtn{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:11.5px;font-weight:800;color:#fff;background:#2f6fd1;border-radius:999px;padding:6px 12px;text-decoration:none;}
+  .movebtn svg{width:13px;height:13px;}
 
   .mlink{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;color:var(--teal-ink);background:var(--teal-soft);border-radius:999px;padding:4px 9px;text-decoration:none;}
   .mlink:active{transform:scale(.97);} .mlink svg{width:13px;height:13px;}
@@ -140,6 +152,35 @@
   .foot button{background:none;border:1px solid var(--line);border-radius:8px;color:var(--sub);font-size:11px;padding:5px 10px;cursor:pointer;margin-top:6px;}
   .toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%) translateY(20px);background:#1f2a37;color:#fff;font-size:12.5px;font-weight:600;padding:9px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:120;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  /* 멤버 참여 차트 */
+  .mgrid{display:grid;grid-template-columns:50px repeat(6,1fr);gap:4px;margin-bottom:4px;}
+  .mg-h{font-size:10px;font-weight:700;color:var(--sub);text-align:center;align-self:end;padding-bottom:2px;}
+  .mg-name{font-size:12px;font-weight:700;display:flex;align-items:center;}
+  .mg-cell{height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;}
+  .mg-cell.y{background:#0f766e;color:#fff;} .mg-cell.n{background:#eef0ec;} .mg-cell.x{background:#fbe3df;color:#c0432e;} .mg-cell.p{background:#bfe3dd;color:#0b5a54;}
+  .mc-sub{font-size:12px;font-weight:700;color:#0b5a54;margin:12px 0 7px;padding-top:9px;border-top:1px dashed var(--line);}
+  /* 한눈에 간트 */
+  .g-axis{display:flex;gap:8px;margin-bottom:2px;}
+  .gantt-day{display:flex;align-items:stretch;gap:8px;margin:5px 0;}
+  .g-label{flex:none;width:40px;font-size:11px;font-weight:800;text-align:center;display:flex;flex-direction:column;justify-content:center;line-height:1.15;}
+  .g-label span{font-size:9px;color:var(--sub);font-weight:600;}
+  .g-track{position:relative;flex:1;height:34px;background:#f4f6f4;border-radius:8px;overflow:hidden;}
+  .g-axis .g-track{height:14px;background:none;overflow:visible;}
+  .g-hr{position:absolute;top:0;font-size:9px;color:#aab0b6;transform:translateX(-50%);}
+  .g-grid{position:absolute;top:0;bottom:0;width:1px;background:#e4e8e4;}
+  .g-block{position:absolute;top:4px;bottom:4px;border-radius:5px;display:flex;align-items:center;padding:0 5px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.12);}
+  .g-block span{font-size:9px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  /* 몰 층별 트리 */
+  .mall{margin-top:9px;border:1px solid var(--line);border-radius:10px;background:#fafbfa;}
+  .mall summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--teal-ink);padding:8px 10px;list-style:none;}
+  .mall summary::-webkit-details-marker{display:none;}
+  .mall summary::before{content:"▾ ";}
+  .mtree{padding:0 10px 10px;}
+  .mtf{display:flex;gap:8px;padding:5px 0;font-size:12px;border-top:1px dashed var(--line);}
+  .mtf-f{flex:none;width:62px;font-weight:800;color:var(--teal-ink);}
+  .mtf-v{flex:1;color:var(--ink);}
+  .mallimg{margin-top:8px;cursor:pointer;border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  .mallimg img{width:100%;display:block;}
   .lb{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;z-index:200;padding:14px;}
   .lb.show{display:flex;} .lb img{max-width:100%;max-height:100%;border-radius:10px;}
   @media(min-width:620px){ header.app h1{font-size:20px;} #map{height:360px;} }
@@ -149,13 +190,14 @@
 <header class="app">
   <div class="wrap">
     <div><h1>후쿠오카 여행 🇯🇵</h1>
-      <div class="meta">2026.7.15(수) – 7.20(월) · 영석·수아·수경 / 효리누나·5번(16–17)</div></div>
+      <div class="meta">2026.7.15(수) – 7.20(월) · 영석·수아·수경 / 효리·지은(16–17)</div></div>
     <div class="dday"><b id="dday">D-?</b><span>7/15 출발</span></div>
   </div>
 </header>
 
 <main class="wrap">
-  <section class="panel active" id="tab-plan"></section>
+  <section class="panel active" id="tab-over"></section>
+  <section class="panel" id="tab-plan"></section>
   <section class="panel" id="tab-food"></section>
   <section class="panel" id="tab-place"></section>
   <section class="panel" id="tab-decide"></section>
@@ -187,6 +229,7 @@ const IMG = {
 };
 
 const NAV = [
+  {id:"over",  label:"한눈에", icon:'<path d="M4 4v16h16"/><rect x="7" y="11" width="3" height="6"/><rect x="12" y="7" width="3" height="10"/><rect x="17" y="13" width="3" height="4"/>'},
   {id:"plan",  label:"일정", icon:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>'},
   {id:"food",  label:"음식", icon:'<path d="M5 2v9a3 3 0 0 0 3 3v8M9 2v4M7 2v4M19 2c-1.5 0-3 2-3 6 0 3 1 4 2 4v9"/>'},
   {id:"place", label:"장소", icon:'<path d="M6 2h12a1 1 0 0 1 1 1v3H5V3a1 1 0 0 1 1-1zM5 6l-1 14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1L19 6M9 10a3 3 0 0 0 6 0"/>'},
@@ -206,9 +249,9 @@ const ROUTE = [
 ];
 
 const DAYS = [
-  {d:"15", dow:"수", c:"--d15", mem:"<b>영석·수아·수경</b> 도착 (효리·5번 미참)", note:"순서 변경은 영석님 결정 (참고: 와사몬 17시 오픈 · 백스테이지는 저녁 재즈 라이브 중심)",
+  {d:"15", dow:"수", c:"--d15", mem:"<b>영석·수아·수경</b> 도착 (효리·지은 미참)", note:"순서 변경은 영석님 결정 (참고: 와사몬 17시 오픈 · 백스테이지는 저녁 재즈 라이브 중심)",
    stops:[
-     {t:"11:15", tag:"고정", n:"공항 도착", s:"메인 3인 도착", q:"福岡空港", move:"공항선 공항→텐진 약 11분 (高砂 숙소는 텐진서 西鉄 平尾·도보 또는 七隈선 / 합계 대략 40~50분)"},
+     {t:"11:15", tag:"고정", n:"공항 도착", s:"메인 3인 도착", q:"福岡空港", move:{start:"후쿠오카공항", segs:[{type:"train",line:"지하철 공항선",color:"#e8722b",to:"텐진",min:"약11분"},{type:"train",line:"西鉄 오무타선",color:"#c0392b",to:"니시테쓰히라오",min:"약3분"},{type:"walk",to:"숙소(高砂)",min:"약7분"}], total:"대략 40~50분(환승 포함)", gmaps:{o:"福岡空港", d:"高砂2-16-11 福岡市中央区"}}},
      {t:"12:00~", tag:"초안", n:"숙소 짐보관", s:"레지던스 타카사고 — 캐리어 보관", q:ACCOM, dir:true},
      {t:"점심", tag:"확정", n:"규카츠 모토무라 파르코점", s:"", q:"牛かつもと村 福岡パルコ店", img:"gyukatsu"},
      {t:"쇼핑", tag:"초안", n:"텐진 쇼핑", s:"텐진 지하상가 → 다이토스테이션 → 탱큐마트390 → 파르코 → 무지", q:"天神地下街", img:"tenjin"},
@@ -217,21 +260,21 @@ const DAYS = [
      {t:"저녁", tag:"확정", n:"와사몬 쿠시카츠", s:"17시 오픈 · 熊本串カツ わさもん酒場 天神大名店", q:"わさもん酒場 天神大名店", img:"kushikatsu"},
      {t:"마무리", tag:"초안", n:"편의점/마트 → 숙소", s:"써니 나노카와", q:"サニー 那の川店"},
    ]},
-  {d:"16", dow:"목", c:"--d16", mem:"전원 5인 (효리·5번 08:00 합류)", note:"그 외 16일 일정은 미정",
+  {d:"16", dow:"목", c:"--d16", mem:"전원 5인 (효리·지은 08:00 합류)", note:"그 외 16일 일정은 미정",
    stops:[
-     {t:"08:00", tag:"고정", n:"효리/5번 공항 도착", s:"단기 2인 합류", q:"福岡空港"},
-     {t:"10:00", tag:"초안/확인", n:"호빵맨 박물관", s:"10:00–17:00 (최종입장 16:00) · 하카타 리버레인", q:"福岡アンパンマンこどもミュージアム", img:"riverain", move:"中洲川端역 하차 (텐진서 공항선 1정거장 약 2분)"},
+     {t:"08:00", tag:"고정", n:"효리/지은 공항 도착", s:"단기 2인 합류", q:"福岡空港"},
+     {t:"10:00", tag:"초안/확인", n:"호빵맨 박물관", s:"10:00–17:00 (최종입장 16:00) · 하카타 리버레인", q:"福岡アンパンマンこどもミュージアム", img:"riverain", move:{start:"텐진", segs:[{type:"train",line:"지하철 공항선",color:"#e8722b",to:"나카스카와바타",min:"약2분"}], total:"1정거장 · 中洲川端역 하차", gmaps:{o:"天神駅 福岡", d:"福岡アンパンマンこどもミュージアム"}}},
    ]},
   {d:"17", dow:"금", c:"--d17", mem:"단기 2인 출발일", note:"그 외 17일 일정은 미정",
    stops:[
      {t:"낮", tag:"초안", n:"돈키호테 텐진점", s:"", q:"ドン・キホーテ 天神本店", img:"donki"},
-     {t:"17:45", tag:"고정", n:"효리/5번 출발", s:"", q:"福岡空港", dir:true},
+     {t:"17:45", tag:"고정", n:"효리/지은 출발", s:"", q:"福岡空港", dir:true},
      {t:"저녁", tag:"영석님", n:"영석 별도일정 (불참)", s:"", q:""},
    ]},
   {d:"18", dow:"토", c:"--d18", mem:"수아·수경 (영석 불참)",
    stops:[
      {t:"1", tag:"초안", n:"유카타 체험", s:"", q:"着物レンタル 福岡 大濠公園", img:"yukata"},
-     {t:"2", tag:"초안", n:"오호리 공원", s:"", q:"大濠公園", img:"ohori", move:"텐진→大濠公園 공항선 약 4분 (2정거장)"},
+     {t:"2", tag:"초안", n:"오호리 공원", s:"", q:"大濠公園", img:"ohori", move:{start:"텐진", segs:[{type:"train",line:"지하철 공항선",color:"#e8722b",to:"오호리코엔",min:"약4분"}], total:"2정거장(아카사카 경유)", gmaps:{o:"天神駅 福岡", d:"大濠公園"}}},
      {t:"3", tag:"초안", n:"쇼핑", s:"베이프 후쿠오카(西海岸) · Ruby's 니시도리점(빈티지) · 로프트(화장품)", q:"BAPE STORE 福岡"},
      {t:"4", tag:"초안", n:"오호리 공원", s:"", q:"大濠公園"},
      {t:"5", tag:"초안", n:"킷사텐", s:"", q:"喫茶店 大濠公園 福岡"},
@@ -245,14 +288,14 @@ const DAYS = [
      {t:"1", tag:"초안", n:"후쿠오카현 호국신사 오도리", s:"", q:"福岡県護国神社", img:"gokoku"},
      {t:"2", tag:"초안", n:"오호리공원", s:"", q:"大濠公園"},
      {t:"3", tag:"초안", n:"숙소", s:"", q:ACCOM, dir:true},
-     {t:"오후", tag:"초안", n:"축제 고쿠라 기온 다이코", s:"기타큐슈 고쿠라성", q:"小倉城 小倉祇園太鼓", img:"festival", festival:true},
+     {t:"오후", tag:"초안", n:"축제 고쿠라 기온 다이코", s:"기타큐슈 고쿠라성", q:"小倉城 小倉祇園太鼓", img:"festival", festival:true, move:{start:"하카타", segs:[{type:"train",line:"산요신칸센",color:"#2f6fd1",to:"고쿠라",min:"약15~18분"},{type:"walk",to:"고쿠라성",min:"약15분"}], total:"신칸센 기준(일요일 운행) · 특급 소닉이면 약40~50분", gmaps:{o:"博多駅", d:"小倉城"}}},
      {t:"마무리", tag:"초안", n:"숙소", s:"", q:ACCOM, dir:true},
    ]},
   {d:"20", dow:"월", c:"--d20", mem:"메인 3인 귀국",
    stops:[
      {t:"10:00", tag:"고정", n:"숙소 체크아웃", s:"레지던스 타카사고", q:ACCOM, dir:true},
      {t:"낮", tag:"미정", n:"(미정)", s:"초안에 비어있음", q:""},
-     {t:"19:00경", tag:"초안", n:"공항 — 락커 짐 맡기고 면세점", s:"", q:"福岡空港", move:"숙소(高砂)→공항 대략 40~50분 (西鉄 平尾→텐진→공항선)"},
+     {t:"19:00경", tag:"초안", n:"공항 — 락커 짐 맡기고 면세점", s:"", q:"福岡空港", move:{start:"숙소(高砂)", segs:[{type:"walk",to:"니시테쓰히라오",min:"약7분"},{type:"train",line:"西鉄 오무타선",color:"#c0392b",to:"텐진",min:"약3분"},{type:"train",line:"지하철 공항선",color:"#e8722b",to:"후쿠오카공항",min:"약11분"}], total:"대략 40~50분(환승 포함)", gmaps:{o:"高砂2-16-11 福岡市中央区", d:"福岡空港"}}},
      {t:"19:50", tag:"고정", n:"출발 → 21:20 인천 T1", s:"", q:"福岡空港"},
    ]},
 ];
@@ -278,7 +321,7 @@ const FOOD = [
     {n:"시로가네라멘 쿄야", sub:"돈코츠쇼유", q:"白金ラーメン 京家 福岡", t:"mid"},
   ]},
   {g:"디저트 · 카페", items:[
-    {n:"하카타역 후르츠산도", sub:"오픈런 · 효리누나 희망", q:"フルーツサンド 博多駅", t:"hi", img:"fruitsando"},
+    {n:"하카타역 후르츠산도", sub:"오픈런 · 효리 희망", q:"フルーツサンド 博多駅", t:"hi", img:"fruitsando"},
     {n:"파티쉐리 몽쉐르", sub:"디저트", q:"モンシェール 福岡", t:"mid", img:"cake"},
     {n:"재즈앤카페 백스테이지", sub:"15일 식후 카페 (확정)", q:"ジャズ喫茶 バックステージ 福岡 大名", t:"mid", img:"cafe"},
   ]},
@@ -323,7 +366,7 @@ const PLACES = [
 const DECISIONS = [
   {n:"15일 점심·카페·저녁", done:true, s:"확정 → 규카츠 모토무라(파르코) · 재즈앤카페 백스테이지 · 쿠시카츠 와사몬사카바", opts:["✓ 확정"]},
   {n:"동선 취합 수단", s:"toki 앱 폐업 → 이 플래너로 대체?", opts:["이 플래너 사용","구글지도 공유리스트","카톡 고정"]},
-  {n:"단기 복편 인천 도착 시각", s:"효리누나·5번 7/17 17:45 후쿠오카 출발 → 인천 도착 시각 미상", opts:["항공권 재확인"]},
+  {n:"단기 복편 인천 도착 시각", s:"효리·지은 7/17 17:45 후쿠오카 출발 → 인천 도착 시각 미상", opts:["항공권 재확인"]},
   {n:'"샤갈" 의미 확인', s:"수아 2회 언급 후 미해결", opts:["수아에게 확인"]},
   {n:"영석님 18일 참여 여부", s:"18일 불참 택일 / 19일 축제 참여", opts:["18 불참","18 참여"]},
 ];
@@ -356,8 +399,99 @@ const TRAIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 const mapLink = q => q ? `<a class="mlink" target="_blank" rel="noopener" href="${mapU(q)}">${PIN}지도</a>` : "";
 const dirLink = q => q ? `<a class="mlink dir" target="_blank" rel="noopener" href="${dirU(q)}">${ARROW}길찾기</a>` : "";
 const stTag = tag => { if(!tag) return ""; const m={"고정":"fix","확정":"conf","초안":"draft","초안/확인":"und","미정":"und","영석님":"ys"}; return `<span class="st-tag ${m[tag]||'draft'}">${tag}</span>`; };
+function renderMove(mv){
+  if(!mv) return "";
+  if(typeof mv==="string") return `<div class="move">${TRAIN}${mv}</div>`;
+  let s=`<span class="mvnode start">${mv.start}</span>`;
+  (mv.segs||[]).forEach(g=>{ const w=g.type==="walk"; s+=`<span class="mvseg ${w?'walk':''}" style="--lc:${g.color||'#8a93a0'}"><span class="mvlabel">${w?'도보':g.line}</span><span class="mvline"></span><span class="mvmin">${g.min||''}</span></span><span class="mvnode">${g.to}</span>`; });
+  const btn=mv.gmaps?`<a class="movebtn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&travelmode=transit&origin=${enc(mv.gmaps.o)}&destination=${enc(mv.gmaps.d)}">${TRAIN}대중교통 길찾기(지도)</a>`:"";
+  return `<div class="movecard"><div class="movestrip">${s}</div>${mv.total?`<div class="movetotal">총 ${mv.total}</div>`:""}${btn}</div>`;
+}
 const thumb1 = key => { const a=key&&IMG[key]; return a&&a.length?`<div class="tlthumb" data-full="img/${a[0]}"><img loading="lazy" src="img/${a[0]}" alt=""></div>`:""; };
 const gallery = key => { const a=key&&IMG[key]; return a&&a.length?`<div class="gallery">`+a.map(f=>`<div class="thumb" data-full="img/${f}"><img loading="lazy" src="img/${f}" alt=""></div>`).join("")+`</div>`:""; };
+
+/* 멤버 참여 차트 (지은→지은, 효리·지은 별도 트랙) */
+const DLABELS = ["15수","16목","17금","18토","19일","20월"];
+const MEM_MAIN = [
+  {nm:"영석님", d:["y","y",{l:"저녁별도",c:"p"},{l:"불참",c:"x"},"y","y"]},
+  {nm:"수아",   d:["y","y","y","y","y","y"]},
+  {nm:"수경이", d:["y","y","y","y","y","y"]},
+];
+const MEM_SHORT = [
+  {nm:"효리", d:["n",{l:"08:00~",c:"p"},{l:"~17:45",c:"p"},"n","n","n"]},
+  {nm:"지은", d:["n",{l:"08:00~",c:"p"},{l:"~17:45",c:"p"},"n","n","n"]},
+];
+function mgRows(list){
+  return list.map(m=>`<div class="mg-name">${m.nm}</div>`+ m.d.map(x=> (typeof x==="object")
+    ? `<div class="mg-cell ${x.c||'p'}">${x.l}</div>`
+    : `<div class="mg-cell ${x}">${x==='x'?'불참':''}</div>`).join("")).join("");
+}
+function renderMemberChart(){
+  return `<div class="mgrid"><div class="mg-name"></div>${DLABELS.map(d=>`<div class="mg-h">${d}</div>`).join("")}${mgRows(MEM_MAIN)}</div>
+    <div class="mc-sub">단기 합류 · <b>효리·지은</b> (7/16 08:00 도착 ~ 7/17 17:45 출발)</div>
+    <div class="mgrid">${mgRows(MEM_SHORT)}</div>
+    <div class="legend"><span class="mg-cell y" style="display:inline-block;width:16px;height:12px;border-radius:3px;vertical-align:middle"></span> 참여 · 회색 미참 · <span style="color:#c0432e">빨강</span> 불참 · <span style="color:#0b5a54">하늘</span> 부분참여<br>영석님: 17일 저녁 별도 · 18일 불참 택일 / 19일 축제 참여</div>`;
+}
+
+/* 전체 일정 한눈에 (대략 시간축 간트) */
+function approxRange(t){
+  t=(t||"").trim();
+  const m=t.match(/(\d{1,2}):(\d{2})/);
+  if(m){const h=+m[1]+(+m[2])/60; const dur=/~/.test(t)?2:/10:00/.test(t)?2:1; return [h,Math.min(h+dur,23)];}
+  const map={"오픈런":[9,10.5],"오전":[9.5,12],"점심":[12,13.5],"낮":[12.5,15.5],"쇼핑":[13.5,16],"오후":[15,18],"카페":[15.5,16.5],"식후":[20,21],"저녁":[18,20],"마무리":[20.5,22],"밤":[21,22.5]};
+  return map[t]||null;
+}
+const TAGCOLOR={"고정":"#1f2a37","확정":"#0f766e","초안":"#9aa3ad","초안/확인":"#e0a700","미정":"#e0a700","영석님":"#7b59d1"};
+function renderOver(){
+  const AX0=8, AX1=23, span=AX1-AX0, hours=[8,10,12,14,16,18,20,22];
+  let rows="";
+  DAYS.forEach(day=>{
+    let cursor=null, blocks="";
+    day.stops.forEach(st=>{
+      let r=approxRange(st.t);
+      if(!r){ const s=cursor!=null?cursor:10; r=[s,s+1.3]; }
+      if(cursor!=null && r[0]<cursor){ const d=r[1]-r[0]; r=[cursor,cursor+d]; }
+      cursor=r[1];
+      const left=(r[0]-AX0)/span*100, w=Math.max((r[1]-r[0])/span*100,3.5);
+      blocks+=`<div class="g-block" style="left:${left}%;width:${w}%;background:${TAGCOLOR[st.tag]||'#9aa3ad'}"><span>${st.n}</span></div>`;
+    });
+    rows+=`<div class="gantt-day"><div class="g-label" style="color:var(${day.c})">${day.d}일<br><span>${day.dow}</span></div><div class="g-track">${hours.map(h=>`<span class="g-grid" style="left:${(h-AX0)/span*100}%"></span>`).join("")}${blocks}</div></div>`;
+  });
+  $("#tab-over").innerHTML=`<div class="sec-title" style="margin-top:4px">전체 일정 한눈에 <span class="pill">대략 시간축 08–23시</span></div>
+    <div class="card">
+      <div class="g-axis"><div class="g-label"></div><div class="g-track">${hours.map(h=>`<span class="g-hr" style="left:${(h-AX0)/span*100}%">${h}</span>`).join("")}</div></div>
+      ${rows}
+      <div class="note" style="margin-top:10px">막대 위치·길이는 <b>대략값</b> ([고정] 시간만 정확) · 빈 구간 = 여유 · 자세한 건 ‘일정’ 탭</div>
+      <div class="legend"><span style="color:#1f2a37;font-weight:900">■</span>고정 <span style="color:#0f766e;font-weight:900">■</span>확정 <span style="color:#9aa3ad;font-weight:900">■</span>초안 <span style="color:#e0a700;font-weight:900">■</span>미정/확인</div>
+    </div>`;
+}
+
+/* 쇼핑몰/백화점 층별 트리 + 도면 (공식 확인분만) */
+const MALL = {
+  "天神パルコ":{floor:"parco-floor.png", guide:"https://fukuoka.parco.jp/floor/", tree:[
+    {f:"본관 5F", v:["LUSH (러쉬)"]},
+    {f:"본관 6F", v:["빌리지뱅가드"]},
+    {f:"본관 8F", v:["텐진 캐릭터파크 — 키디랜드·리락쿠마스토어·스누피타운"]},
+  ], note:"※ 무지·CAN DO는 파르코 공식 목록에 없음. 가까운 무지는 솔라리아플라자 B1F(다른 건물)."},
+  "博多阪急":{floor:"hankyu-8f.jpg", guide:"https://www.hankyu-dept.co.jp/hakata/floor/", tree:[
+    {f:"B1F", v:["식품·푸드코트"]},{f:"1F", v:["화장품·여성잡화"]},{f:"2F", v:["남성"]},
+    {f:"4–5F", v:["여성복·가방·신발"]},{f:"6F", v:["남성복"]},{f:"7F", v:["리빙·베이비/키즈"]},
+    {f:"8F", v:["취미잡화 유트리에·여성복·스포츠"]},
+  ], note:"※ momotaro 그리팅은 한큐 아님 → 옆 건물 MING(마이ング). 첨부 도면은 8F."},
+  "天神地下街":{guide:"https://www.tenchika.com/tool-map/", tree:[
+    {f:"B1F", v:["1~12번가 · 동/서 2개 통로 · 텐진역(북)~텐진남역(남) · 약 150점포"]},
+  ], note:"※ 공식 지도는 PDF만 → 위 링크 참고."},
+  "ドン・キホーテ 天神本店":{guide:"https://www.donki.com/store/shop_detail.php?shop_id=461", tree:[
+    {f:"B1F", v:["식품"]},{f:"2~5F", v:["의류·코스메·잡화 등 (층별 공식 미확인)"]},
+  ], note:"※ 총 6층(B1~5F). 공식 층별 도면 이미지 없음."},
+};
+function mallTree(q){
+  const m=MALL[q]; if(!m) return "";
+  const floors=m.tree.map(f=>`<div class="mtf"><span class="mtf-f">${f.f}</span><span class="mtf-v">${f.v.join(" · ")}</span></div>`).join("");
+  const img=m.floor?`<div class="mallimg" data-full="img/${m.floor}"><img loading="lazy" src="img/${m.floor}" alt="층별안내"></div>`:"";
+  const guide=m.guide?`<a class="mlink" target="_blank" rel="noopener" href="${m.guide}">공식 층별안내 ↗</a>`:"";
+  return `<details class="mall"><summary>🏬 층별 안내${m.floor?" · 도면":""}</summary><div class="mtree">${floors}${m.note?`<div class="note">${m.note}</div>`:""}<div style="margin-top:8px">${guide}</div>${img}</div></details>`;
+}
 
 function renderPlan(){
   const stops = ROUTE;
@@ -381,7 +515,7 @@ function renderPlan(){
           <div class="tlbody">
             <div class="tlname">${st.n}${stTag(st.tag)}</div>
             ${st.s?`<div class="tldesc">${st.s}</div>`:""}
-            ${st.move?`<div class="move">${TRAIN}${st.move}</div>`:""}
+            ${renderMove(st.move)}
             ${st.festival?`<div class="callout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><div><b>이동</b> — 하카타→고쿠라 신칸센 약 15~18분(일요일 운행) 또는 특급 소닉 약 40~50분 · 小倉역→고쿠라성 도보 약 15분 · 정확한 시각은 당일 확인.</div></div>`:""}
             <div class="tlacts">${thumb1(st.img)}${mapLink(st.q)}${st.dir?dirLink(st.q):""}</div>
           </div>
@@ -405,7 +539,7 @@ function renderItems(target, GROUPS, prefix){
       const star = it.t!=="no" ? `<button class="ic-star js-toggle" data-id="${id}" aria-label="가고싶음">★</button>` : `<span style="width:30px;flex:none"></span>`;
       h += `<div class="item">${star}<div class="it-body">
         <div class="it-name">${it.n}${tag}</div>${it.sub?`<div class="it-sub">${it.sub}</div>`:""}
-        ${it.q?`<div style="margin-top:7px">${mapLink(it.q)}</div>`:""}${gallery(it.img)}</div></div>`;
+        ${it.q?`<div style="margin-top:7px">${mapLink(it.q)}</div>`:""}${gallery(it.img)}${mallTree(it.q)}</div></div>`;
     });
     h += `</div>`;
   });
@@ -433,24 +567,16 @@ function renderPack(){
   $("#tab-pack").innerHTML = h;
 }
 function renderInfo(){
-  const att = [
-    {nm:"영석님", v:["O","O","O*","X","O","O"]},{nm:"수아", v:["O","O","O","O","O","O"]},{nm:"수경이", v:["O","O","O","O","O","O"]},
-    {nm:"효리누나",v:["-","O**","O***","-","-","-"]},{nm:"5번인원", v:["-","O**","O***","-","-","-"]},
-  ];
-  const cell = x => (x==="-"||x==="X") ? `<span class="no">${x==="X"?"X":"–"}</span>` : x.includes("*") ? `<span class="star">${x}</span>` : `<span class="yes">O</span>`;
   $("#tab-info").innerHTML = `
-  <div class="sec-title">멤버 · 일정</div>
-  <div class="card"><div class="tbl-scroll"><table class="att">
-    <tr><th>멤버</th><th>15수</th><th>16목</th><th>17금</th><th>18토</th><th>19일</th><th>20월</th></tr>
-    ${att.map(r=>`<tr><td class="name">${r.nm}</td>${r.v.map(cell).join("")}</tr>`).join("")}</table></div>
-    <div class="legend"><b>O</b> 참여 · <b>–</b> 미참 · <b>X</b> 불참<br><b>O*</b> 17일 저녁 별도(영석님) · <b>O**</b> 16일 08:00 도착 · <b>O***</b> 17일 17:45 출발(공항이동 고려 16:00경까지)<br>영석님: 18일 불참 택일 / 19일 축제 참여</div></div>
+  <div class="sec-title">멤버 · 참여 차트</div>
+  <div class="card">${renderMemberChart()}</div>
 
   <div class="sec-title">항공편</div>
   <div class="card">
     <div class="kv"><div class="k">메인 출국</div><div class="v"><b>7/15 09:45</b> 인천 T1 → <b>11:15</b> 후쿠오카 · <span class="it-sub">영석·수아·수경</span></div></div>
     <div class="kv"><div class="k">메인 귀국</div><div class="v"><b>7/20 19:50</b> 후쿠오카 → <b>21:20</b> 인천 T1 · <span class="it-sub">영석·수아·수경</span></div></div>
-    <div class="kv"><div class="k">단기 출국</div><div class="v"><b>7/16 06:30</b> 인천 → <b>08:00</b> 후쿠오카 · <span class="it-sub">효리누나·5번</span></div></div>
-    <div class="kv"><div class="k">단기 귀국</div><div class="v"><b>7/17 17:45</b> 후쿠오카 → 인천 <span class="badge-und">도착시각 미상</span> · <span class="it-sub">효리누나·5번</span></div></div>
+    <div class="kv"><div class="k">단기 출국</div><div class="v"><b>7/16 06:30</b> 인천 → <b>08:00</b> 후쿠오카 · <span class="it-sub">효리·지은</span></div></div>
+    <div class="kv"><div class="k">단기 귀국</div><div class="v"><b>7/17 17:45</b> 후쿠오카 → 인천 <span class="badge-und">도착시각 미상</span> · <span class="it-sub">효리·지은</span></div></div>
     <div class="note">※ 메인 도착시각: 티켓 <b>11:15</b> 기준.</div></div>
 
   <div class="sec-title">숙소 <span class="pill">확정</span></div>
@@ -501,7 +627,7 @@ function initMap(){
   const el = document.getElementById("map");
   if(typeof L === "undefined"){ el.outerHTML = `<div class="mapfail">지도를 불러오지 못했습니다(인터넷 필요).<br>아래 ‘구글맵 전체 경로 길찾기’를 이용하세요.</div>`; return; }
   MAP = L.map("map",{scrollWheelZoom:false});
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{maxZoom:20,subdomains:"abcd",attribution:"© OpenStreetMap © CARTO"}).addTo(MAP);
+  L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png",{maxZoom:18,attribution:"地理院タイル (国土地理院)"}).addTo(MAP);
   const pts = [ACCOM_LL];
   L.marker(ACCOM_LL,{icon:L.divIcon({className:"",html:`<div class="pin home" style="background:#0b5a54">🏠</div>`,iconSize:[26,26],iconAnchor:[13,13]})}).addTo(MAP)
     .bindPopup(`<b>숙소 · 레지던스 타카사고</b><br><a href="${mapU(ACCOM)}" target="_blank" rel="noopener">구글맵 ↗</a>`);
@@ -530,9 +656,9 @@ function setDday(){ try{ const now=new Date(),today=new Date(now.getFullYear(),n
 let toastTimer; function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),1600); }
 $("#resetBtn").addEventListener("click", ()=>{ if(confirm("초기화할까요?")){ const tab=STATE.__tab; STATE={}; if(tab)STATE.__tab=tab; save(); applyState(); toast("초기화 완료"); } });
 
-renderPlan(); renderItems($("#tab-food"),FOOD,"food"); renderItems($("#tab-place"),PLACES,"place"); renderDecide(); renderPack(); renderInfo();
+renderOver(); renderPlan(); renderItems($("#tab-food"),FOOD,"food"); renderItems($("#tab-place"),PLACES,"place"); renderDecide(); renderPack(); renderInfo();
 buildNav(); applyState(); setDday(); initMap();
-activate(STATE.__tab && NAV.some(n=>n.id===STATE.__tab) ? STATE.__tab : "plan");
+activate(STATE.__tab && NAV.some(n=>n.id===STATE.__tab) ? STATE.__tab : "over");
 </script>
 </body>
 </html>
