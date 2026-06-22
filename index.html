@@ -90,6 +90,8 @@
   .movetotal{font-size:11px;color:#5b6672;font-weight:700;margin-top:8px;}
   .movebtn{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:11.5px;font-weight:800;color:#fff;background:#2f6fd1;border-radius:999px;padding:6px 12px;text-decoration:none;}
   .movebtn svg{width:13px;height:13px;}
+  .movebtn.alt{background:#64748b;margin-top:8px;}
+  .gmap{width:100%;height:300px;border:0;border-radius:12px;background:#eef0ec;}
 
   .mlink{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;color:var(--teal-ink);background:var(--teal-soft);border-radius:999px;padding:4px 9px;text-decoration:none;}
   .mlink:active{transform:scale(.97);} .mlink svg{width:13px;height:13px;}
@@ -172,9 +174,7 @@
   .g-block span{font-size:9px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   /* 몰 층별 트리 */
   .mall{margin-top:9px;border:1px solid var(--line);border-radius:10px;background:#fafbfa;}
-  .mall summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--teal-ink);padding:8px 10px;list-style:none;}
-  .mall summary::-webkit-details-marker{display:none;}
-  .mall summary::before{content:"▾ ";}
+  .mall-h{font-size:12px;font-weight:800;color:var(--teal-ink);padding:9px 10px 2px;}
   .mtree{padding:0 10px 10px;}
   .mtf{display:flex;gap:8px;padding:5px 0;font-size:12px;border-top:1px dashed var(--line);}
   .mtf-f{flex:none;width:62px;font-weight:800;color:var(--teal-ink);}
@@ -490,16 +490,17 @@ function mallTree(q){
   const floors=m.tree.map(f=>`<div class="mtf"><span class="mtf-f">${f.f}</span><span class="mtf-v">${f.v.join(" · ")}</span></div>`).join("");
   const img=m.floor?`<div class="mallimg" data-full="img/${m.floor}"><img loading="lazy" src="img/${m.floor}" alt="층별안내"></div>`:"";
   const guide=m.guide?`<a class="mlink" target="_blank" rel="noopener" href="${m.guide}">공식 층별안내 ↗</a>`:"";
-  return `<details class="mall"><summary>🏬 층별 안내${m.floor?" · 도면":""}</summary><div class="mtree">${floors}${m.note?`<div class="note">${m.note}</div>`:""}<div style="margin-top:8px">${guide}</div>${img}</div></details>`;
+  return `<div class="mall"><div class="mall-h">🏬 층별 안내${m.floor?" · 도면(탭하면 확대)":""}</div><div class="mtree">${floors}${m.note?`<div class="note">${m.note}</div>`:""}<div style="margin-top:8px">${guide}</div>${img}</div></div>`;
 }
 
 function renderPlan(){
   const stops = ROUTE;
+  const gO=enc(ACCOM), gD=ROUTE.map(s=>enc(s.q)).join("+to:")+"+to:"+gO;
   let mapcard = `<div class="card">
-    <div class="sec-title" style="margin-top:0">📍 1일차 위치 <span class="pill">순서는 아래 일정</span></div>
-    <div id="map"></div>
-    <a class="bigbtn" id="grouteBtn" target="_blank" rel="noopener" href="#">${ARROW.replace('stroke="currentColor"','stroke="white"')}구글맵에서 전체 경로 길찾기</a>
-    <div class="note">핀은 위치만 표시(연결선 없음) · 순서/동선 변경은 영석님 결정.</div>
+    <div class="sec-title" style="margin-top:0">📍 1일차 동선 <span class="pill">구글지도</span></div>
+    <iframe class="gmap" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q=${enc("天神 福岡")}&z=14&output=embed"></iframe>
+    <a class="bigbtn" id="grouteBtn" target="_blank" rel="noopener" href="#">${ARROW.replace('stroke="currentColor"','stroke="white"')}구글맵에서 전체 경로 보기(5곳)</a>
+    <div class="note">구글지도(텐진 일대) · 5곳 전체 경로/길찾기는 위 버튼 · 순서 변경은 영석님 결정.</div>
   </div>`;
 
   let h = mapcard + `<div class="intro">📍 장소마다 <b>지도</b>·<b>길찾기</b>(숙소 출발) · 동그라미로 완료 체크 · 사진 탭하면 확대. 교통편은 확인된 것만 표기.</div>`;
@@ -509,13 +510,14 @@ function renderPlan(){
       <div class="day-mem">${day.mem}</div><div class="tl">`;
     day.stops.forEach((st,si)=>{
       const id = `stop-${day.d}-${si}`;
+      const prev = si>0 ? day.stops[si-1] : null;
       h += `<div class="tlstop" data-stop data-id="${id}">
         <div class="tlrow">
           <div class="tltime">${st.t||""}</div>
           <div class="tlbody">
             <div class="tlname">${st.n}${stTag(st.tag)}</div>
             ${st.s?`<div class="tldesc">${st.s}</div>`:""}
-            ${renderMove(st.move)}
+            ${st.move ? renderMove(st.move) : (prev && prev.q && st.q ? `<a class="movebtn alt" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&travelmode=transit&origin=${enc(prev.q)}&destination=${enc(st.q)}">${TRAIN}${prev.n}에서 길찾기</a>` : "")}
             ${st.festival?`<div class="callout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><div><b>이동</b> — 하카타→고쿠라 신칸센 약 15~18분(일요일 운행) 또는 특급 소닉 약 40~50분 · 小倉역→고쿠라성 도보 약 15분 · 정확한 시각은 당일 확인.</div></div>`:""}
             <div class="tlacts">${thumb1(st.img)}${mapLink(st.q)}${st.dir?dirLink(st.q):""}</div>
           </div>
@@ -623,22 +625,7 @@ document.addEventListener("click", e=>{
 
 /* ===================== 지도 (깔끔 · 연결선 없음) ===================== */
 let MAP = null;
-function initMap(){
-  const el = document.getElementById("map");
-  if(typeof L === "undefined"){ el.outerHTML = `<div class="mapfail">지도를 불러오지 못했습니다(인터넷 필요).<br>아래 ‘구글맵 전체 경로 길찾기’를 이용하세요.</div>`; return; }
-  MAP = L.map("map",{scrollWheelZoom:false});
-  L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png",{maxZoom:18,attribution:"地理院タイル (国土地理院)"}).addTo(MAP);
-  const pts = [ACCOM_LL];
-  L.marker(ACCOM_LL,{icon:L.divIcon({className:"",html:`<div class="pin home" style="background:#0b5a54">🏠</div>`,iconSize:[26,26],iconAnchor:[13,13]})}).addTo(MAP)
-    .bindPopup(`<b>숙소 · 레지던스 타카사고</b><br><a href="${mapU(ACCOM)}" target="_blank" rel="noopener">구글맵 ↗</a>`);
-  ROUTE.forEach((s,i)=>{
-    pts.push([s.lat,s.lon]);
-    const thumb = (s.img && IMG[s.img]) ? `<img src="img/${IMG[s.img][0]}" style="width:100%;border-radius:8px;margin-top:6px">` : "";
-    L.marker([s.lat,s.lon],{icon:L.divIcon({className:"",html:`<div class="pin" style="background:${KIND_COLOR[s.kind]}">${i+1}</div>`,iconSize:[26,26],iconAnchor:[13,13]})}).addTo(MAP)
-      .bindPopup(`<b>${i+1}. ${s.name}</b><br><span style="color:#5b6672">${s.time}</span>${thumb}<br><a href="${mapU(s.q)}" target="_blank" rel="noopener">구글맵 ↗</a>`);
-  });
-  MAP.fitBounds(pts,{padding:[36,36]});
-}
+function initMap(){ /* 지도는 구글 임베드 iframe으로 대체 */ }
 
 /* ===================== 탭 ===================== */
 function buildNav(){
