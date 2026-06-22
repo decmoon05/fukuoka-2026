@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0f766e">
+<title>후쿠오카 여행 2026 · 7/15–20</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin></script>
+<style>
+  :root{
+    --bg:#f6f7f5; --card:#fff; --ink:#1f2a37; --sub:#5b6672; --line:#e9ebe7;
+    --teal:#0f766e; --teal-soft:#e3f1ef; --teal-ink:#0b5a54;
+    --coral:#ef6f5a; --coral-soft:#fdeae6; --gold:#e0a700;
+    --shadow:0 1px 2px rgba(16,24,40,.04),0 6px 18px rgba(16,24,40,.06);
+    --r:16px; --maxw:760px;
+    --d15:#0f766e; --d16:#2f7fd1; --d17:#7b59d1; --d18:#d1568a; --d19:#e08a1e; --d20:#5b6672;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{font-family:"Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;
+    padding-bottom:calc(72px + env(safe-area-inset-bottom));}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 14px;}
+  a{color:inherit;}
+
+  header.app{background:linear-gradient(135deg,#0f766e,#12857b 60%,#0b6e7a);color:#fff;
+    padding:calc(env(safe-area-inset-top) + 18px) 0 16px;box-shadow:0 4px 16px rgba(15,118,110,.22);}
+  header.app .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  header.app h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-.01em;}
+  header.app .meta{font-size:12.5px;opacity:.9;margin-top:3px;font-weight:500;}
+  .dday{flex:none;text-align:center;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);
+    border-radius:14px;padding:8px 12px;min-width:64px;}
+  .dday b{display:block;font-size:20px;font-weight:800;line-height:1.1;} .dday span{font-size:10.5px;opacity:.9;}
+
+  main{padding-top:16px;}
+  .panel{display:none;animation:fade .25s ease;} .panel.active{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .sec-title{font-size:13px;font-weight:800;color:var(--teal-ink);margin:22px 2px 10px;display:flex;align-items:center;gap:7px;}
+  .sec-title:first-child{margin-top:4px;}
+  .sec-title .pill{font-size:10.5px;font-weight:700;color:var(--sub);background:#eef0ec;border-radius:999px;padding:2px 8px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px;margin-bottom:12px;}
+  .intro{font-size:12.5px;color:var(--sub);background:#eef3f1;border:1px solid #d9e6e3;border-radius:12px;padding:10px 12px;margin-bottom:4px;}
+  .note{font-size:11.5px;color:var(--sub);margin:6px 2px 0;}
+
+  /* day card */
+  .day{position:relative;overflow:hidden;}
+  .day::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c,#0f766e);}
+  .day-head{display:flex;align-items:baseline;gap:9px;padding-left:6px;}
+  .day-head .dnum{font-size:17px;font-weight:800;color:var(--c,#0f766e);}
+  .day-head .dlab{font-size:12.5px;color:var(--sub);font-weight:600;}
+  .day-mem{padding-left:6px;font-size:12px;color:var(--sub);margin:3px 0 6px;} .day-mem b{color:var(--ink);font-weight:700;}
+
+  /* timeline */
+  .tl{position:relative;margin-top:6px;padding-left:18px;}
+  .tl::before{content:"";position:absolute;left:5px;top:10px;bottom:16px;width:2px;background:var(--line);}
+  .tlstop{position:relative;padding:9px 0;}
+  .tlstop::before{content:"";position:absolute;left:-16.5px;top:13px;width:10px;height:10px;border-radius:50%;
+    background:#fff;border:2.5px solid var(--c,#0f766e);box-sizing:border-box;}
+  .tlstop.done::before{background:var(--c,#0f766e);}
+  .tlrow{display:flex;gap:9px;align-items:flex-start;}
+  .tltime{flex:none;width:44px;font-size:11px;font-weight:800;color:var(--c,#0f766e);padding-top:2px;line-height:1.35;}
+  .tlbody{flex:1;min-width:0;}
+  .tlname{font-weight:700;font-size:14px;}
+  .tldesc{font-size:12px;color:var(--sub);margin-top:2px;}
+  .tlstop.done .tlname,.tlstop.done .tldesc{text-decoration:line-through;opacity:.45;}
+  .tlacts{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap;align-items:center;}
+  .tlthumb{flex:none;width:54px;height:54px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#eef0ec;cursor:pointer;}
+  .tlthumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .st-tag{font-size:10px;font-weight:800;border-radius:6px;padding:1px 6px;margin-left:5px;vertical-align:middle;white-space:nowrap;}
+  .st-tag.fix{color:#fff;background:#1f2a37;}      /* 고정 */
+  .st-tag.conf{color:#0b5a54;background:#cdeae5;}  /* 확정 */
+  .st-tag.draft{color:#5b6672;background:#eef0ec;} /* 초안 */
+  .st-tag.und{color:#9a6b00;background:#fff3cf;}   /* 미정/확인 */
+  .st-tag.ys{color:#7b3fb0;background:#efe3fb;}    /* 영석님 지정 */
+  .move{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#475569;background:#eef1f5;
+    border:1px solid #e1e6ee;border-radius:8px;padding:3px 8px;margin:6px 0 0;}
+  .move svg{width:12px;height:12px;opacity:.7;}
+
+  .mlink{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;color:var(--teal-ink);background:var(--teal-soft);border-radius:999px;padding:4px 9px;text-decoration:none;}
+  .mlink:active{transform:scale(.97);} .mlink svg{width:13px;height:13px;}
+  .mlink.dir{color:#8a4a00;background:#fbf0db;}
+  .toggle{flex:none;width:25px;height:25px;border-radius:50%;border:2px solid var(--line);background:#fff;cursor:pointer;
+    display:grid;place-items:center;padding:0;color:transparent;transition:.15s;align-self:flex-start;margin-top:1px;}
+  .toggle svg{width:13px;height:13px;} .toggle.is-on{background:var(--teal);border-color:var(--teal);color:#fff;}
+
+  .callout{display:flex;gap:9px;background:var(--coral-soft);border:1px solid #f6cdc4;border-radius:12px;padding:9px 11px;margin:8px 0 2px;font-size:12px;color:#8a3a2b;}
+  .callout svg{flex:none;width:15px;height:15px;margin-top:1px;} .callout b{color:#b5402c;}
+
+  /* gallery (food/place) */
+  .gallery{display:flex;gap:6px;overflow-x:auto;margin-top:9px;padding-bottom:2px;-webkit-overflow-scrolling:touch;}
+  .thumb{flex:none;border-radius:10px;overflow:hidden;border:1px solid var(--line);cursor:pointer;background:#eef0ec;line-height:0;}
+  .thumb img{height:86px;width:auto;max-width:150px;object-fit:cover;display:block;}
+
+  .item{display:flex;align-items:flex-start;gap:11px;padding:12px 0;border-top:1px solid var(--line);}
+  .item:first-child{border-top:none;}
+  .item .ic-star{flex:none;width:30px;height:30px;border:0;background:none;cursor:pointer;color:#cfd4cd;font-size:21px;line-height:1;padding:0;}
+  .item .ic-star.is-on{color:var(--gold);}
+  .item .it-body{flex:1;min-width:0;} .item .it-name{font-weight:700;font-size:14.5px;} .item .it-sub{font-size:12px;color:var(--sub);margin-top:2px;}
+  .tag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle;}
+  .tag.hi{background:#fde9e6;color:#c0432e;} .tag.mid{background:#eef1ee;color:#5b6672;} .tag.no{background:#f0f0f0;color:#999;text-decoration:line-through;}
+
+  .check{display:flex;align-items:flex-start;gap:11px;padding:10px 0;border-top:1px solid var(--line);cursor:pointer;}
+  .check:first-child{border-top:none;}
+  .check .box{flex:none;width:24px;height:24px;border-radius:7px;border:2px solid #cfd4cd;background:#fff;display:grid;place-items:center;color:transparent;transition:.15s;margin-top:1px;}
+  .check .box svg{width:14px;height:14px;} .check.is-on .box{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .check .ck-body{flex:1;min-width:0;} .check .ck-name{font-weight:600;font-size:14px;} .check.is-on .ck-name{text-decoration:line-through;color:var(--sub);} .check .ck-sub{font-size:12px;color:var(--sub);margin-top:2px;}
+  .decision .opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;} .opt{font-size:12px;font-weight:600;background:#f3f5f2;border:1px solid var(--line);border-radius:999px;padding:4px 10px;}
+  .badge-und{display:inline-block;font-size:10px;font-weight:800;background:#fff3cf;color:#9a6b00;border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:middle;}
+
+  .kv{display:flex;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:13px;} .kv:first-child{border-top:none;}
+  .kv .k{flex:none;width:88px;color:var(--sub);font-weight:600;font-size:12px;} .kv .v{flex:1;min-width:0;} .kv .v b{font-weight:700;}
+  .copy{font-size:11px;font-weight:700;color:var(--teal-ink);background:var(--teal-soft);border:0;border-radius:8px;padding:3px 8px;margin-left:6px;cursor:pointer;}
+  .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -2px;}
+  table.att{border-collapse:collapse;width:100%;font-size:12.5px;min-width:360px;}
+  table.att th,table.att td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap;}
+  table.att th{background:#f3f5f2;font-weight:700;color:var(--sub);font-size:11.5px;}
+  table.att td.name{text-align:left;font-weight:700;} table.att .yes{color:var(--teal);font-weight:800;} table.att .no{color:#c9ccc7;} table.att .star{color:var(--coral);font-weight:800;}
+  .legend{font-size:11.5px;color:var(--sub);margin-top:8px;line-height:1.7;}
+  .map-embed{border:0;width:100%;height:220px;border-radius:12px;margin-top:4px;background:#eef0ec;}
+
+  /* map */
+  #map{height:280px;border-radius:12px;overflow:hidden;z-index:0;border:1px solid var(--line);}
+  .mapfail{height:110px;display:grid;place-items:center;text-align:center;color:#8a3a2b;font-size:13px;padding:16px;background:#fdeae6;border-radius:12px;}
+  .pin{width:26px;height:26px;border-radius:50%;color:#fff;font-weight:800;font-size:13px;display:grid;place-items:center;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.35);}
+  .pin.home{font-size:14px;}
+  .routelist{list-style:none;margin:12px 0 0;padding:0;}
+  .routelist li{display:flex;align-items:center;gap:9px;padding:5px 0;font-size:13px;}
+  .routelist .rn{flex:none;width:22px;height:22px;border-radius:50%;color:#fff;font-weight:800;font-size:11px;display:grid;place-items:center;}
+  .routelist .rt{flex:none;width:46px;color:var(--sub);font-size:11px;font-weight:700;}
+  .bigbtn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:12px;background:var(--teal);color:#fff;font-weight:800;font-size:13.5px;border:0;border-radius:12px;padding:13px;text-decoration:none;}
+  .bigbtn svg{width:16px;height:16px;}
+
+  nav.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom));display:flex;}
+  nav.tabbar button{flex:1;border:0;background:none;padding:5px 2px;cursor:pointer;color:#98a0a8;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:700;}
+  nav.tabbar button svg{width:22px;height:22px;} nav.tabbar button.active{color:var(--teal);}
+  .foot{text-align:center;color:#aab0b6;font-size:11px;padding:18px 0 8px;}
+  .foot button{background:none;border:1px solid var(--line);border-radius:8px;color:var(--sub);font-size:11px;padding:5px 10px;cursor:pointer;margin-top:6px;}
+  .toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%) translateY(20px);background:#1f2a37;color:#fff;font-size:12.5px;font-weight:600;padding:9px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:120;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .lb{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;z-index:200;padding:14px;}
+  .lb.show{display:flex;} .lb img{max-width:100%;max-height:100%;border-radius:10px;}
+  @media(min-width:620px){ header.app h1{font-size:20px;} #map{height:360px;} }
+</style>
+</head>
+<body>
+<header class="app">
+  <div class="wrap">
+    <div><h1>후쿠오카 여행 🇯🇵</h1>
+      <div class="meta">2026.7.15(수) – 7.20(월) · 영석·수아·수경 / 효리누나·5번(16–17)</div></div>
+    <div class="dday"><b id="dday">D-?</b><span>7/15 출발</span></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="panel active" id="tab-plan"></section>
+  <section class="panel" id="tab-food"></section>
+  <section class="panel" id="tab-place"></section>
+  <section class="panel" id="tab-decide"></section>
+  <section class="panel" id="tab-pack"></section>
+  <section class="panel" id="tab-info"></section>
+  <div class="foot">여행 계획 초안 · 체크는 이 기기에 저장<br><button id="resetBtn">체크·선택 초기화</button></div>
+</main>
+
+<nav class="tabbar" id="tabbar"></nav>
+<div class="toast" id="toast"></div>
+<div class="lb" id="lb"><img id="lbimg" src="" alt=""></div>
+
+<script>
+/* ===================== 데이터 ===================== */
+const ACCOM = "高砂2-16-11 福岡市中央区";
+const ACCOM_LL = [33.5800, 130.4062];
+
+const IMG = {
+  gyukatsu:["gyukatsu-1.jpg","gyukatsu-2.jpg"], kushikatsu:["kushikatsu-1.jpg","kushikatsu-2.jpg"],
+  yatai:["yatai-1.jpg","yatai-2.jpg"], mentai:["mentai-1.jpg","mentai-2.jpg"],
+  tonkotsu:["tonkotsu-1.jpg","tonkotsu-2.jpg"], sushi:["sushi-1.jpg"], curry:["curry-1.jpg"],
+  soba:["soba-1.jpg"], inari:["inari-1.jpg"], fruitsando:["fruitsando-1.jpg","fruitsando-2.jpg"],
+  cake:["cake-1.jpg"], gyudon:["gyudon-1.jpg"], cafe:["cafe-1.jpg","cafe-2.jpg"], izakaya:["izakaya-1.jpg"], tsukemen:["tsukemen-1.jpg"],
+  ohori:["ohori-3.jpg","ohori-1.jpg","ohori-2.jpg"], artmuseum:["artmuseum-1.jpg"], gokoku:["gokoku-1.jpg"],
+  festival:["kokura_taiko-1.jpg","kokura-1.jpg","kokura-2.jpg","kokura-3.jpg"],
+  dazaifu:["dazaifu-1.jpg","dazaifu-2.jpg"], marineworld:["marineworld-1.jpg"],
+  tenjin:["tenjin-1.jpg","tenjin-2.jpg"], hakata:["hakata_st-1.jpg","hakata_st-2.jpg"],
+  riverain:["riverain-1.jpg","riverain-2.webp"], yukata:["yukata-1.jpg"], city:["fukuoka_city-1.jpg","fukuoka_city-2.jpg"], donki:["donki-1.jpg","donki-2.jpg"],
+};
+
+const NAV = [
+  {id:"plan",  label:"일정", icon:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>'},
+  {id:"food",  label:"음식", icon:'<path d="M5 2v9a3 3 0 0 0 3 3v8M9 2v4M7 2v4M19 2c-1.5 0-3 2-3 6 0 3 1 4 2 4v9"/>'},
+  {id:"place", label:"장소", icon:'<path d="M6 2h12a1 1 0 0 1 1 1v3H5V3a1 1 0 0 1 1-1zM5 6l-1 14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1L19 6M9 10a3 3 0 0 0 6 0"/>'},
+  {id:"decide",label:"결정", icon:'<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>'},
+  {id:"pack",  label:"준비물", icon:'<rect x="5" y="7" width="14" height="14" rx="2"/><path d="M9 7V5a3 3 0 0 1 6 0v2M9 12l2 2 4-4"/>'},
+  {id:"info",  label:"정보", icon:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'},
+];
+
+/* 1일차 동선 (한 바퀴: 숙소→텐진→다이묘→귀가). onestay 셀프체크인이라 중간 복귀 불필요 */
+const KIND_COLOR = {food:"#ef6f5a", shop:"#2f7fd1", cafe:"#7b59d1", mart:"#0f766e"};
+const ROUTE = [
+  {name:"규카츠 모토무라 (파르코) · 점심", time:"점심", kind:"food", lat:33.5913, lon:130.3997, q:"牛かつもと村 福岡パルコ店", img:"gyukatsu"},
+  {name:"텐진 쇼핑 (지하상가·다이토·탱큐·파르코·무지)", time:"쇼핑", kind:"shop", lat:33.5906, lon:130.3999, q:"天神地下街", img:"tenjin"},
+  {name:"재즈앤카페 백스테이지 · 카페", time:"카페", kind:"cafe", lat:33.5893, lon:130.3962, q:"ジャズ喫茶 バックステージ 福岡 大名", img:"cafe"},
+  {name:"와사몬 쿠시카츠 · 저녁", time:"저녁", kind:"food", lat:33.5903, lon:130.3958, q:"わさもん酒場 天神大名店", img:"kushikatsu"},
+  {name:"써니 나노카와 · 마트", time:"마무리", kind:"mart", lat:33.5726, lon:130.4050, q:"サニー 那の川店"},
+];
+
+const DAYS = [
+  {d:"15", dow:"수", c:"--d15", mem:"<b>영석·수아·수경</b> 도착 (효리·5번 미참)", note:"순서 변경은 영석님 결정 (참고: 와사몬 17시 오픈 · 백스테이지는 저녁 재즈 라이브 중심)",
+   stops:[
+     {t:"11:15", tag:"고정", n:"공항 도착", s:"메인 3인 도착", q:"福岡空港", move:"공항선 공항→텐진 약 11분 (高砂 숙소는 텐진서 西鉄 平尾·도보 또는 七隈선 / 합계 대략 40~50분)"},
+     {t:"12:00~", tag:"초안", n:"숙소 짐보관", s:"레지던스 타카사고 — 캐리어 보관", q:ACCOM, dir:true},
+     {t:"점심", tag:"확정", n:"규카츠 모토무라 파르코점", s:"", q:"牛かつもと村 福岡パルコ店", img:"gyukatsu"},
+     {t:"쇼핑", tag:"초안", n:"텐진 쇼핑", s:"텐진 지하상가 → 다이토스테이션 → 탱큐마트390 → 파르코 → 무지", q:"天神地下街", img:"tenjin"},
+     {t:"카페", tag:"확정", n:"재즈앤카페 백스테이지", s:"저녁 재즈 라이브 중심 (영업시간 확인)", q:"ジャズ喫茶 バックステージ 福岡 大名", img:"cafe"},
+     {t:"16:00", tag:"고정", n:"숙소 체크인", s:"onestay 셀프체크인", q:ACCOM, dir:true},
+     {t:"저녁", tag:"확정", n:"와사몬 쿠시카츠", s:"17시 오픈 · 熊本串カツ わさもん酒場 天神大名店", q:"わさもん酒場 天神大名店", img:"kushikatsu"},
+     {t:"마무리", tag:"초안", n:"편의점/마트 → 숙소", s:"써니 나노카와", q:"サニー 那の川店"},
+   ]},
+  {d:"16", dow:"목", c:"--d16", mem:"전원 5인 (효리·5번 08:00 합류)", note:"그 외 16일 일정은 미정",
+   stops:[
+     {t:"08:00", tag:"고정", n:"효리/5번 공항 도착", s:"단기 2인 합류", q:"福岡空港"},
+     {t:"10:00", tag:"초안/확인", n:"호빵맨 박물관", s:"10:00–17:00 (최종입장 16:00) · 하카타 리버레인", q:"福岡アンパンマンこどもミュージアム", img:"riverain", move:"中洲川端역 하차 (텐진서 공항선 1정거장 약 2분)"},
+   ]},
+  {d:"17", dow:"금", c:"--d17", mem:"단기 2인 출발일", note:"그 외 17일 일정은 미정",
+   stops:[
+     {t:"낮", tag:"초안", n:"돈키호테 텐진점", s:"", q:"ドン・キホーテ 天神本店", img:"donki"},
+     {t:"17:45", tag:"고정", n:"효리/5번 출발", s:"", q:"福岡空港", dir:true},
+     {t:"저녁", tag:"영석님", n:"영석 별도일정 (불참)", s:"", q:""},
+   ]},
+  {d:"18", dow:"토", c:"--d18", mem:"수아·수경 (영석 불참)",
+   stops:[
+     {t:"1", tag:"초안", n:"유카타 체험", s:"", q:"着物レンタル 福岡 大濠公園", img:"yukata"},
+     {t:"2", tag:"초안", n:"오호리 공원", s:"", q:"大濠公園", img:"ohori", move:"텐진→大濠公園 공항선 약 4분 (2정거장)"},
+     {t:"3", tag:"초안", n:"쇼핑", s:"베이프 후쿠오카(西海岸) · Ruby's 니시도리점(빈티지) · 로프트(화장품)", q:"BAPE STORE 福岡"},
+     {t:"4", tag:"초안", n:"오호리 공원", s:"", q:"大濠公園"},
+     {t:"5", tag:"초안", n:"킷사텐", s:"", q:"喫茶店 大濠公園 福岡"},
+     {t:"6", tag:"초안", n:"유카타 반납", s:"", q:""},
+     {t:"7", tag:"초안", n:"각자 자유", s:"후쿠오카 미술관 / 바다 / 공원 / 쇼핑 / 카페", q:"福岡市美術館", img:"artmuseum"},
+     {t:"8", tag:"초안", n:"저녁 같이", s:"", q:""},
+   ]},
+  {d:"19", dow:"일", c:"--d19", mem:"메인 3인 (영석 합류 = 축제)",
+   stops:[
+     {t:"오전", tag:"초안", n:"하카타역 후르츠산도 + 스탠다드 프로덕트", s:"오픈런 (효리 희망)", q:"フルーツサンド 博多駅", img:"fruitsando"},
+     {t:"1", tag:"초안", n:"후쿠오카현 호국신사 오도리", s:"", q:"福岡県護国神社", img:"gokoku"},
+     {t:"2", tag:"초안", n:"오호리공원", s:"", q:"大濠公園"},
+     {t:"3", tag:"초안", n:"숙소", s:"", q:ACCOM, dir:true},
+     {t:"오후", tag:"초안", n:"축제 고쿠라 기온 다이코", s:"기타큐슈 고쿠라성", q:"小倉城 小倉祇園太鼓", img:"festival", festival:true},
+     {t:"마무리", tag:"초안", n:"숙소", s:"", q:ACCOM, dir:true},
+   ]},
+  {d:"20", dow:"월", c:"--d20", mem:"메인 3인 귀국",
+   stops:[
+     {t:"10:00", tag:"고정", n:"숙소 체크아웃", s:"레지던스 타카사고", q:ACCOM, dir:true},
+     {t:"낮", tag:"미정", n:"(미정)", s:"초안에 비어있음", q:""},
+     {t:"19:00경", tag:"초안", n:"공항 — 락커 짐 맡기고 면세점", s:"", q:"福岡空港", move:"숙소(高砂)→공항 대략 40~50분 (西鉄 平尾→텐진→공항선)"},
+     {t:"19:50", tag:"고정", n:"출발 → 21:20 인천 T1", s:"", q:"福岡空港"},
+   ]},
+];
+
+const FOOD = [
+  {g:"우선순위 높음", items:[
+    {n:"규카츠", sub:"모토무라 파르코점 / 교토카츠규 텐진거리점 / 우시카츠모토무라 텐진니시도리점", q:"牛かつもと村 福岡パルコ店", t:"hi", img:"gyukatsu"},
+    {n:"쿠시카츠", sub:"쿠마모토 쿠시카츠 와사몬사카바 텐진다이묘점", q:"わさもん酒場 天神大名店", t:"hi", img:"kushikatsu"},
+    {n:"야타이 (포장마차)", sub:"나카스 포장마차 거리", q:"中洲 屋台", t:"hi", img:"yatai"},
+    {n:"명란덮밥 + 츠케멘", sub:"매장 미지정", q:"明太子 つけ麺 福岡", t:"hi", img:"tsukemen"},
+  ]},
+  {g:"우선순위 중", items:[
+    {n:"돈코츠 라멘", sub:"이치무진 고후쿠마치점 / 이치란 본사 총본점 / 신신라멘", q:"一蘭 本社総本店 福岡", t:"mid", img:"tonkotsu"},
+    {n:"스시", sub:"스시로 오야후코도리점 / 스시킨", q:"スシロー 親富孝通り店", t:"mid", img:"sushi"},
+    {n:"카레", sub:"나일 하카타 한큐점", q:"ナイル 博多阪急", t:"mid", img:"curry"},
+    {n:"멘타이", sub:"원조 하카타 멘타이쥬", q:"元祖博多めんたい重", t:"mid", img:"mentai"},
+    {n:"소바", sub:"소바차야 하나모토 신텐마치점", q:"そば茶屋 華元 新天町 福岡", t:"mid", img:"soba"},
+    {n:"유부초밥 / 패밀리", sub:"이나리노콘 · 사이제리야 텐진다이묘점 · 가정식", q:"いなりのこん 福岡", t:"mid", img:"inari"},
+  ]},
+  {g:"숙소 근처", items:[
+    {n:"웃챠리", sub:"숙소 인근 이자카야", q:"うっちゃり 福岡 高砂", t:"mid", img:"izakaya"},
+    {n:"요시노야 나노카와점", sub:"규동", q:"吉野家 那の川店", t:"mid", img:"gyudon"},
+    {n:"시로가네라멘 쿄야", sub:"돈코츠쇼유", q:"白金ラーメン 京家 福岡", t:"mid"},
+  ]},
+  {g:"디저트 · 카페", items:[
+    {n:"하카타역 후르츠산도", sub:"오픈런 · 효리누나 희망", q:"フルーツサンド 博多駅", t:"hi", img:"fruitsando"},
+    {n:"파티쉐리 몽쉐르", sub:"디저트", q:"モンシェール 福岡", t:"mid", img:"cake"},
+    {n:"재즈앤카페 백스테이지", sub:"15일 식후 카페 (확정)", q:"ジャズ喫茶 バックステージ 福岡 大名", t:"mid", img:"cafe"},
+  ]},
+  {g:"반려됨", items:[ {n:"삼겹살 · 육회", sub:"이번엔 제외", q:"", t:"no"} ]},
+];
+
+const PLACES = [
+  {g:"관광 · 체험", items:[
+    {n:"호빵맨 어린이뮤지엄", sub:"10:00–17:00 (최종입장 16:00) · 16일", q:"福岡アンパンマンこどもミュージアム", img:"riverain"},
+    {n:"유카타 체험", sub:"18일 · 오호리공원 인근", q:"着物レンタル 福岡 大濠公園", img:"yukata"},
+    {n:"오호리 공원", sub:"산책 · 보트", q:"大濠公園", img:"ohori"},
+    {n:"후쿠오카 미술관", sub:"오호리공원 내", q:"福岡市美術館", img:"artmuseum"},
+    {n:"호국신사 오도리", sub:"19일 오전 · 벼룩시장", q:"福岡県護国神社", img:"gokoku"},
+    {n:"고쿠라 기온 다이코 축제", sub:"19일 · 기타큐슈 고쿠라성", q:"小倉城 小倉祇園太鼓", img:"festival"},
+    {n:"다자이후", sub:"여유 시 후보", q:"太宰府天満宮", img:"dazaifu"},
+    {n:"마린월드 우미노나카미치", sub:"여유 시 후보", q:"マリンワールド海の中道", img:"marineworld"},
+    {n:"텐진중앙공원 · 케고공원", sub:"텐진 도심 공원", q:"警固公園 天神", img:"city"},
+  ]},
+  {g:"쇼핑 — 텐진", items:[
+    {n:"텐진 지하상가", sub:"", q:"天神地下街", img:"tenjin"},
+    {n:"다이토스테이션", sub:"오락실", q:"タイトーステーション 福岡天神店"},
+    {n:"탱큐마트 390", sub:"390엔샵", q:"サンキューマート 天神"},
+    {n:"텐진 파르코", sub:"무지·키디랜드·리락쿠마·lush·빌리지뱅가드·can do", q:"天神パルコ"},
+    {n:"다이소 / 세리아", sub:"100엔샵", q:"ダイソー 天神"},
+    {n:"스탠다드 프로덕트", sub:"다이소 상위 브랜드", q:"スタンダードプロダクツ 福岡"},
+    {n:"로프트", sub:"화장품·잡화", q:"ロフト 天神"},
+    {n:"베이프 후쿠오카", sub:"스트릿", q:"BAPE STORE 福岡"},
+    {n:"Ruby's 니시도리점", sub:"빈티지", q:"Ruby's 西通り 福岡"},
+    {n:"돈키호테 텐진점", sub:"17일", q:"ドン・キホーテ 天神本店", img:"donki"},
+  ]},
+  {g:"쇼핑 — 하카타", items:[
+    {n:"한큐 하카타", sub:"momotaro greeting", q:"博多阪急", img:"hakata"},
+    {n:"로피아 (하카타 요도바시)", sub:"식료품", q:"ロピア ヨドバシ博多"},
+    {n:"세리아 (하카타 마루이)", sub:"", q:"セリア 博多マルイ"},
+    {n:"시마무라", sub:"의류", q:"しまむら 博多"},
+    {n:"만다라케 후쿠오카점", sub:"서브컬처", q:"まんだらけ 福岡"},
+    {n:"하카타역 코인락커", sub:"하카타구치 지하1층 세븐 옆", q:"博多駅 コインロッカー"},
+  ]},
+  {g:"기타", items:[ {n:"술 구매처 (후보 2곳)", sub:"구매 확정 · 면세한도 확인", q:"酒 ディスカウント 福岡 天神"} ]},
+];
+
+const DECISIONS = [
+  {n:"15일 점심·카페·저녁", done:true, s:"확정 → 규카츠 모토무라(파르코) · 재즈앤카페 백스테이지 · 쿠시카츠 와사몬사카바", opts:["✓ 확정"]},
+  {n:"동선 취합 수단", s:"toki 앱 폐업 → 이 플래너로 대체?", opts:["이 플래너 사용","구글지도 공유리스트","카톡 고정"]},
+  {n:"단기 복편 인천 도착 시각", s:"효리누나·5번 7/17 17:45 후쿠오카 출발 → 인천 도착 시각 미상", opts:["항공권 재확인"]},
+  {n:'"샤갈" 의미 확인', s:"수아 2회 언급 후 미해결", opts:["수아에게 확인"]},
+  {n:"영석님 18일 참여 여부", s:"18일 불참 택일 / 19일 축제 참여", opts:["18 불참","18 참여"]},
+];
+
+const PACK = [
+  {g:"서류 · 필수", items:[
+    {n:"여권", s:"유효기간 6개월 이상"},{n:"onestay 사전 체크인", s:"코드 onestay 앱에서 확인 · 여권정보 등록"},
+    {n:"항공권 / e-티켓", s:"메인 7/15·7/20, 단기 7/16·7/17"},{n:"Airbnb 예약 확인", s:"Airbnb 앱에서 확인"},{n:"여행자보험", s:""},
+  ]},
+  {g:"전자 · 통신", items:[
+    {n:"eSIM 5GB 구매·설치", s:"숙소 와이파이 불확실"},{n:"보조배터리", s:"기내 휴대만"},
+    {n:"충전기 · 110V 돼지코(A타입)", s:""},{n:"멀티탭", s:"콘센트 부족 대비"},
+  ]},
+  {g:"현지 · 돈", items:[
+    {n:"엔화 환전 / 트래블카드", s:"야타이·동전 대비"},{n:"코인락커용 동전", s:""},
+    {n:"우산 / 우비", s:"7월 장마"},{n:"자외선차단 · 상비약", s:""},
+  ]},
+  {g:"귀국", items:[ {n:"공항 락커 짐 회수", s:"20일 19:00경"},{n:"술 구매 (면세한도 확인)", s:""} ]},
+];
+
+/* ===================== 렌더 ===================== */
+const $ = s => document.querySelector(s);
+const enc = encodeURIComponent;
+const mapU = q => "https://www.google.com/maps/search/?api=1&query=" + enc(q);
+const dirU = q => "https://www.google.com/maps/dir/?api=1&origin=" + enc(ACCOM) + "&destination=" + enc(q);
+const PIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>';
+const ARROW='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+const CK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+const TRAIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="3" width="12" height="14" rx="2"/><path d="M6 11h12M9 20l-2 2M15 20l2 2M9 17v1M15 17v1"/></svg>';
+const mapLink = q => q ? `<a class="mlink" target="_blank" rel="noopener" href="${mapU(q)}">${PIN}지도</a>` : "";
+const dirLink = q => q ? `<a class="mlink dir" target="_blank" rel="noopener" href="${dirU(q)}">${ARROW}길찾기</a>` : "";
+const stTag = tag => { if(!tag) return ""; const m={"고정":"fix","확정":"conf","초안":"draft","초안/확인":"und","미정":"und","영석님":"ys"}; return `<span class="st-tag ${m[tag]||'draft'}">${tag}</span>`; };
+const thumb1 = key => { const a=key&&IMG[key]; return a&&a.length?`<div class="tlthumb" data-full="img/${a[0]}"><img loading="lazy" src="img/${a[0]}" alt=""></div>`:""; };
+const gallery = key => { const a=key&&IMG[key]; return a&&a.length?`<div class="gallery">`+a.map(f=>`<div class="thumb" data-full="img/${f}"><img loading="lazy" src="img/${f}" alt=""></div>`).join("")+`</div>`:""; };
+
+function renderPlan(){
+  const stops = ROUTE;
+  let mapcard = `<div class="card">
+    <div class="sec-title" style="margin-top:0">📍 1일차 위치 <span class="pill">순서는 아래 일정</span></div>
+    <div id="map"></div>
+    <a class="bigbtn" id="grouteBtn" target="_blank" rel="noopener" href="#">${ARROW.replace('stroke="currentColor"','stroke="white"')}구글맵에서 전체 경로 길찾기</a>
+    <div class="note">핀은 위치만 표시(연결선 없음) · 순서/동선 변경은 영석님 결정.</div>
+  </div>`;
+
+  let h = mapcard + `<div class="intro">📍 장소마다 <b>지도</b>·<b>길찾기</b>(숙소 출발) · 동그라미로 완료 체크 · 사진 탭하면 확대. 교통편은 확인된 것만 표기.</div>`;
+  DAYS.forEach(day=>{
+    h += `<div class="card day" style="--c:var(${day.c})">
+      <div class="day-head"><span class="dnum">${day.d}일</span><span class="dlab">7/${day.d} (${day.dow})</span></div>
+      <div class="day-mem">${day.mem}</div><div class="tl">`;
+    day.stops.forEach((st,si)=>{
+      const id = `stop-${day.d}-${si}`;
+      h += `<div class="tlstop" data-stop data-id="${id}">
+        <div class="tlrow">
+          <div class="tltime">${st.t||""}</div>
+          <div class="tlbody">
+            <div class="tlname">${st.n}${stTag(st.tag)}</div>
+            ${st.s?`<div class="tldesc">${st.s}</div>`:""}
+            ${st.move?`<div class="move">${TRAIN}${st.move}</div>`:""}
+            ${st.festival?`<div class="callout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><div><b>이동</b> — 하카타→고쿠라 신칸센 약 15~18분(일요일 운행) 또는 특급 소닉 약 40~50분 · 小倉역→고쿠라성 도보 약 15분 · 정확한 시각은 당일 확인.</div></div>`:""}
+            <div class="tlacts">${thumb1(st.img)}${mapLink(st.q)}${st.dir?dirLink(st.q):""}</div>
+          </div>
+          <button class="toggle js-toggle" data-id="${id}" data-target=".tlstop" aria-label="완료">${CK}</button>
+        </div></div>`;
+    });
+    h += `</div>${day.note?`<div class="note" style="padding-left:6px">${day.note}</div>`:""}</div>`;
+  });
+  $("#tab-plan").innerHTML = h;
+  const wp = stops.map(s=>enc(s.q)).join("|");
+  $("#grouteBtn").href = "https://www.google.com/maps/dir/?api=1&travelmode=walking&origin="+enc(ACCOM)+"&destination="+enc(ACCOM)+"&waypoints="+wp;
+}
+
+function renderItems(target, GROUPS, prefix){
+  let h = `<div class="intro">⭐ 가고 싶은 곳에 별 표시 · 지도 버튼으로 위치 · 사진 탭하면 확대.</div>`;
+  GROUPS.forEach((grp,gi)=>{
+    h += `<div class="sec-title">${grp.g}</div><div class="card">`;
+    grp.items.forEach((it,ii)=>{
+      const id = `${prefix}-${gi}-${ii}`;
+      const tag = it.t==="hi"?`<span class="tag hi">강추</span>`:it.t==="no"?`<span class="tag no">제외</span>`:"";
+      const star = it.t!=="no" ? `<button class="ic-star js-toggle" data-id="${id}" aria-label="가고싶음">★</button>` : `<span style="width:30px;flex:none"></span>`;
+      h += `<div class="item">${star}<div class="it-body">
+        <div class="it-name">${it.n}${tag}</div>${it.sub?`<div class="it-sub">${it.sub}</div>`:""}
+        ${it.q?`<div style="margin-top:7px">${mapLink(it.q)}</div>`:""}${gallery(it.img)}</div></div>`;
+    });
+    h += `</div>`;
+  });
+  target.innerHTML = h;
+}
+
+function renderDecide(){
+  let h = `<div class="intro">정해지면 체크. 15일 점심·카페·저녁은 확정.</div><div class="sec-title">결정 항목 <span class="pill">${DECISIONS.length}건</span></div>`;
+  DECISIONS.forEach((dc,i)=>{
+    const id = `dec-${i}`;
+    h += `<div class="card decision"><div class="check js-check" data-id="${id}"${dc.done?' data-default="1"':''}>
+      <div class="box">${CK}</div><div class="ck-body"><div class="ck-name">${dc.n}</div><div class="ck-sub">${dc.s}</div></div></div>
+      <div class="opts">${dc.opts.map(o=>`<span class="opt">${o}</span>`).join("")}</div></div>`;
+  });
+  $("#tab-decide").innerHTML = h;
+}
+function renderPack(){
+  let h = `<div class="intro">출발 전 / 현지 체크리스트.</div>`;
+  PACK.forEach((grp,gi)=>{
+    h += `<div class="sec-title">${grp.g}</div><div class="card">`;
+    grp.items.forEach((it,ii)=>{ const id=`pack-${gi}-${ii}`;
+      h += `<div class="check js-check" data-id="${id}"><div class="box">${CK}</div><div class="ck-body"><div class="ck-name">${it.n}</div>${it.s?`<div class="ck-sub">${it.s}</div>`:""}</div></div>`; });
+    h += `</div>`;
+  });
+  $("#tab-pack").innerHTML = h;
+}
+function renderInfo(){
+  const att = [
+    {nm:"영석님", v:["O","O","O*","X","O","O"]},{nm:"수아", v:["O","O","O","O","O","O"]},{nm:"수경이", v:["O","O","O","O","O","O"]},
+    {nm:"효리누나",v:["-","O**","O***","-","-","-"]},{nm:"5번인원", v:["-","O**","O***","-","-","-"]},
+  ];
+  const cell = x => (x==="-"||x==="X") ? `<span class="no">${x==="X"?"X":"–"}</span>` : x.includes("*") ? `<span class="star">${x}</span>` : `<span class="yes">O</span>`;
+  $("#tab-info").innerHTML = `
+  <div class="sec-title">멤버 · 일정</div>
+  <div class="card"><div class="tbl-scroll"><table class="att">
+    <tr><th>멤버</th><th>15수</th><th>16목</th><th>17금</th><th>18토</th><th>19일</th><th>20월</th></tr>
+    ${att.map(r=>`<tr><td class="name">${r.nm}</td>${r.v.map(cell).join("")}</tr>`).join("")}</table></div>
+    <div class="legend"><b>O</b> 참여 · <b>–</b> 미참 · <b>X</b> 불참<br><b>O*</b> 17일 저녁 별도(영석님) · <b>O**</b> 16일 08:00 도착 · <b>O***</b> 17일 17:45 출발(공항이동 고려 16:00경까지)<br>영석님: 18일 불참 택일 / 19일 축제 참여</div></div>
+
+  <div class="sec-title">항공편</div>
+  <div class="card">
+    <div class="kv"><div class="k">메인 출국</div><div class="v"><b>7/15 09:45</b> 인천 T1 → <b>11:15</b> 후쿠오카 · <span class="it-sub">영석·수아·수경</span></div></div>
+    <div class="kv"><div class="k">메인 귀국</div><div class="v"><b>7/20 19:50</b> 후쿠오카 → <b>21:20</b> 인천 T1 · <span class="it-sub">영석·수아·수경</span></div></div>
+    <div class="kv"><div class="k">단기 출국</div><div class="v"><b>7/16 06:30</b> 인천 → <b>08:00</b> 후쿠오카 · <span class="it-sub">효리누나·5번</span></div></div>
+    <div class="kv"><div class="k">단기 귀국</div><div class="v"><b>7/17 17:45</b> 후쿠오카 → 인천 <span class="badge-und">도착시각 미상</span> · <span class="it-sub">효리누나·5번</span></div></div>
+    <div class="note">※ 메인 도착시각: 티켓 <b>11:15</b> 기준.</div></div>
+
+  <div class="sec-title">숙소 <span class="pill">확정</span></div>
+  <div class="card">
+    <div class="kv"><div class="k">숙소명</div><div class="v"><b>Amp Flat / 레지던스 타카사고</b></div></div>
+    <div class="kv"><div class="k">주소</div><div class="v">福岡市 中央区 高砂 2-16-11 <button class="copy" data-copy="${ACCOM}">복사</button></div></div>
+    <div class="kv"><div class="k">위치</div><div class="v">텐진 남쪽 · 西鉄平尾역 도보 9분 · 西鉄天神大牟田線</div></div>
+    <div class="kv"><div class="k">플랫폼</div><div class="v">Airbnb · 예약 <b>Airbnb 앱에서 확인</b> <button class="copy" data-copy="Airbnb 앱에서 확인">복사</button></div></div>
+    <div class="kv"><div class="k">사전체크인</div><div class="v">onestay 앱 · 코드 <b>onestay 앱에서 확인</b> <button class="copy" data-copy="onestay 앱에서 확인">복사</button></div></div>
+    <div class="kv"><div class="k">짐 / 체크인 / 아웃</div><div class="v">15일 12:00~ 보관 · 15일 16:00 체크인 · 20일 10:00 아웃</div></div>
+    <div class="kv"><div class="k">인터넷</div><div class="v">와이파이 불확실 → <b>eSIM 5GB</b> 권장</div></div>
+    <div style="display:flex;gap:6px;margin-top:10px;">${mapLink(ACCOM)}${dirLink("福岡空港")}</div>
+    <iframe class="map-embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q=${enc(ACCOM)}&z=15&output=embed"></iframe>
+    <div class="note">※ 주변 store는 지도로 실제 인근 재확인 권장.</div></div>
+
+  <div class="sec-title">축제 메모</div>
+  <div class="card"><div style="font-size:13px">2026 <b>고쿠라 기온 다이코</b> 본축제 7/17–19. 연령제한 없는 <b>打ち納め는 7/19(일)</b> 고쿠라성. 개최지는 <b>기타큐슈 고쿠라</b> — 후쿠오카시 외곽이라 이동 필요(교통편·소요시간 확인 중).</div>
+    <div style="margin-top:10px">${mapLink("小倉城")}</div>${gallery("festival")}
+    <div class="note">출처: とくなび福岡 / ささっとー (2026.6 확인).</div></div>`;
+}
+
+/* ===================== 상태 ===================== */
+const KEY = "fukuoka2026.v3";
+let STATE = {};
+try{ STATE = JSON.parse(localStorage.getItem(KEY) || "{}"); }catch(e){ STATE = {}; }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(STATE)); }catch(e){} }
+function applyState(){
+  document.querySelectorAll(".js-toggle, .js-check").forEach(el=>{
+    let on = !!STATE[el.dataset.id];
+    if(el.dataset.default && STATE[el.dataset.id]===undefined) on = true;
+    el.classList.toggle("is-on", on);
+    const tgt = el.dataset.target; if(tgt){ const p=el.closest(tgt); if(p) p.classList.toggle("done", on); }
+  });
+}
+document.addEventListener("click", e=>{
+  const el = e.target.closest(".js-toggle, .js-check");
+  if(el){ STATE[el.dataset.id] = !el.classList.contains("is-on"); save(); applyState(); return; }
+  const th = e.target.closest("[data-full]");
+  if(th){ $("#lbimg").src = th.dataset.full; $("#lb").classList.add("show"); return; }
+  if(e.target.closest("#lb")){ $("#lb").classList.remove("show"); return; }
+  const cp = e.target.closest(".copy");
+  if(cp){ const t=cp.dataset.copy; (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("복사됨: "+t)).catch(()=>toast(t)); }
+});
+
+/* ===================== 지도 (깔끔 · 연결선 없음) ===================== */
+let MAP = null;
+function initMap(){
+  const el = document.getElementById("map");
+  if(typeof L === "undefined"){ el.outerHTML = `<div class="mapfail">지도를 불러오지 못했습니다(인터넷 필요).<br>아래 ‘구글맵 전체 경로 길찾기’를 이용하세요.</div>`; return; }
+  MAP = L.map("map",{scrollWheelZoom:false});
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{maxZoom:20,subdomains:"abcd",attribution:"© OpenStreetMap © CARTO"}).addTo(MAP);
+  const pts = [ACCOM_LL];
+  L.marker(ACCOM_LL,{icon:L.divIcon({className:"",html:`<div class="pin home" style="background:#0b5a54">🏠</div>`,iconSize:[26,26],iconAnchor:[13,13]})}).addTo(MAP)
+    .bindPopup(`<b>숙소 · 레지던스 타카사고</b><br><a href="${mapU(ACCOM)}" target="_blank" rel="noopener">구글맵 ↗</a>`);
+  ROUTE.forEach((s,i)=>{
+    pts.push([s.lat,s.lon]);
+    const thumb = (s.img && IMG[s.img]) ? `<img src="img/${IMG[s.img][0]}" style="width:100%;border-radius:8px;margin-top:6px">` : "";
+    L.marker([s.lat,s.lon],{icon:L.divIcon({className:"",html:`<div class="pin" style="background:${KIND_COLOR[s.kind]}">${i+1}</div>`,iconSize:[26,26],iconAnchor:[13,13]})}).addTo(MAP)
+      .bindPopup(`<b>${i+1}. ${s.name}</b><br><span style="color:#5b6672">${s.time}</span>${thumb}<br><a href="${mapU(s.q)}" target="_blank" rel="noopener">구글맵 ↗</a>`);
+  });
+  MAP.fitBounds(pts,{padding:[36,36]});
+}
+
+/* ===================== 탭 ===================== */
+function buildNav(){
+  $("#tabbar").innerHTML = NAV.map(t=>`<button data-tab="${t.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${t.icon}</svg>${t.label}</button>`).join("");
+  document.querySelectorAll("#tabbar button").forEach(b=> b.addEventListener("click", ()=>activate(b.dataset.tab)));
+}
+function activate(id){
+  document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("active", p.id==="tab-"+id));
+  document.querySelectorAll("#tabbar button").forEach(b=>b.classList.toggle("active", b.dataset.tab===id));
+  STATE.__tab = id; save(); window.scrollTo({top:0});
+  if(id==="plan" && MAP) setTimeout(()=>MAP.invalidateSize(), 120);
+}
+function setDday(){ try{ const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate()),ds=new Date(2026,6,15),de=new Date(2026,6,20);
+  const diff=Math.round((ds-today)/86400000); $("#dday").textContent = today<ds?"D-"+diff:today<=de?"여행중":"여행끝"; }catch(e){} }
+let toastTimer; function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),1600); }
+$("#resetBtn").addEventListener("click", ()=>{ if(confirm("초기화할까요?")){ const tab=STATE.__tab; STATE={}; if(tab)STATE.__tab=tab; save(); applyState(); toast("초기화 완료"); } });
+
+renderPlan(); renderItems($("#tab-food"),FOOD,"food"); renderItems($("#tab-place"),PLACES,"place"); renderDecide(); renderPack(); renderInfo();
+buildNav(); applyState(); setDday(); initMap();
+activate(STATE.__tab && NAV.some(n=>n.id===STATE.__tab) ? STATE.__tab : "plan");
+</script>
+</body>
+</html>
