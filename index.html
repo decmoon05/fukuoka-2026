@@ -125,6 +125,10 @@
   .memo-item{padding:11px 0;border-top:1px solid var(--line);} .memo-item:first-child{border-top:none;}
   .memo-h{display:flex;justify-content:space-between;align-items:center;} .memo-h b{font-size:13px;color:var(--teal-ink);}
   .memo-t{font-size:13px;margin-top:5px;white-space:pre-wrap;line-height:1.55;}
+  .idel{flex:none;border:0;background:#f2efee;color:#b0453a;width:24px;height:24px;border-radius:50%;font-size:12px;font-weight:800;cursor:pointer;align-self:flex-start;margin-left:6px;}
+  .idel:active{background:#fbe3df;}
+  .dec-top{display:flex;align-items:flex-start;gap:8px;} .dec-top .check{flex:1;}
+  .udadd{padding:12px;}
   .tag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle;}
   .tag.hi{background:#fde9e6;color:#c0432e;} .tag.mid{background:#eef1ee;color:#5b6672;} .tag.no{background:#f0f0f0;color:#999;text-decoration:line-through;}
 
@@ -184,6 +188,8 @@
   .g-grid{position:absolute;top:0;bottom:0;width:1px;background:#e4e8e4;}
   .g-block{position:absolute;top:4px;bottom:4px;border-radius:5px;display:flex;align-items:center;padding:0 5px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.12);}
   .g-block span{font-size:9px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  /* 한눈에 차트 크게 */
+  .g-track{height:50px;} .gantt-day{margin:9px 0;} .g-label{width:50px;font-size:13px;} .g-label span{font-size:10.5px;} .g-block span{font-size:11px;} .g-hr{font-size:10.5px;} .g-block{top:5px;bottom:5px;border-radius:6px;}
   /* 몰 층별 트리 */
   .mall{margin-top:9px;border:1px solid var(--line);border-radius:10px;background:#fafbfa;}
   .mall summary{cursor:pointer;font-size:12px;font-weight:800;color:var(--teal-ink);padding:9px 10px;list-style:none;}
@@ -326,7 +332,7 @@ const NAV = [
   {id:"decide",label:"결정", icon:'<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>'},
   {id:"pack",  label:"준비물", icon:'<rect x="5" y="7" width="14" height="14" rx="2"/><path d="M9 7V5a3 3 0 0 1 6 0v2M9 12l2 2 4-4"/>'},
   {id:"info",  label:"정보", icon:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'},
-  {id:"memo",  label:"메모", icon:'<path d="M5 3h11l4 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M8 9h7M8 13h7M8 17h4"/>'},
+  {id:"memo",  label:"요청", icon:'<path d="M5 3h11l4 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M8 9h7M8 13h7M8 17h4"/>'},
 ];
 
 /* 1일차 동선 (한 바퀴: 숙소→텐진→다이묘→귀가). onestay 셀프체크인이라 중간 복귀 불필요 */
@@ -461,7 +467,6 @@ const DECISIONS = [
   {n:"15일 점심·카페·저녁", done:true, s:"확정 → 규카츠 모토무라(파르코) · 재즈앤카페 백스테이지 · 쿠시카츠 와사몬사카바", opts:["✓ 확정"]},
   {n:"동선 취합 수단", s:"toki 앱 폐업 → 이 플래너로 대체?", opts:["이 플래너 사용","구글지도 공유리스트","카톡 고정"]},
   {n:"단기 복편 인천 도착 시각", s:"효리·지은 7/17 17:45 후쿠오카 출발 → 인천 도착 시각 미상", opts:["항공권 재확인"]},
-  {n:'"샤갈" 의미 확인', s:"수아 2회 언급 후 미해결", opts:["수아에게 확인"]},
   {n:"영석님 18일 참여 여부", s:"18일 불참 택일 / 19일 축제 참여", opts:["18 불참","18 참여"]},
 ];
 
@@ -825,41 +830,55 @@ async function addStop(d,pos,name,q,lat,lon,cat,disp){
 }
 function delAdd(d,id){ if(STATE.adds&&STATE.adds[d]){ STATE.adds[d]=STATE.adds[d].filter(a=>a.id!==id); if(STATE.order&&STATE.order[d]) STATE.order[d]=STATE.order[d].filter(k=>k!==id); save(); rerenderPlan(); refreshMap(); toast("삭제됨"); } }
 
+function udAddRow(prefix){ return `<div class="card udadd"><input class="addinput" id="udin_${prefix}" placeholder="직접 추가 (이름)"><button class="js-udadd bigbtn" data-prefix="${prefix}" style="margin-top:8px">＋ 추가</button></div>`; }
+function tabOfId(id){ if(id.indexOf("ufood")===0||id.indexOf("food")===0) return "food"; if(id.indexOf("uplace")===0||id.indexOf("place")===0) return "place"; if(id.indexOf("udecide")===0||id.indexOf("dec")===0) return "decide"; if(id.indexOf("upack")===0||id.indexOf("pack")===0) return "pack"; return null; }
+function rerenderTabP(p){ if(p==="food") renderItems($("#tab-food"),FOOD,"food"); else if(p==="place") renderItems($("#tab-place"),PLACES,"place"); else if(p==="decide") renderDecide(); else if(p==="pack") renderPack(); applyState(); }
 function renderItems(target, GROUPS, prefix){
-  let h = `<div class="intro">⭐ 가고 싶은 곳에 별 표시 · 지도 버튼으로 위치 · 사진 탭하면 확대.</div>`;
+  const del=STATE.del||{};
+  const itemHTML=(it,id)=>{
+    const tag = it.t==="hi"?`<span class="tag hi">강추</span>`:it.t==="no"?`<span class="tag no">제외</span>`:"";
+    const star = it.t!=="no" ? `<button class="ic-star js-toggle" data-id="${id}" aria-label="가고싶음">★</button>` : `<span style="width:30px;flex:none"></span>`;
+    return `<div class="item">${star}<div class="it-body">
+      <div class="it-name${it.q?" js-focus":""}" data-q="${it.q||''}">${it.n}${tag}</div>${it.d?`<div class="it-desc">${it.d}</div>`:""}${it.sub?`<div class="it-sub">${it.sub}</div>`:""}
+      ${it.q?`<div style="margin-top:7px">${mapLink(it.q)}</div>`:""}${gallery(it.img)}${mallTree(it.q)}</div>
+      <button class="js-itemdel idel" data-id="${id}" title="삭제">✕</button></div>`;
+  };
+  let h = `<div class="intro">⭐ 가고 싶은 곳 별 표시 · ✕ 삭제(별과 별도) · 맨 아래에서 직접 추가.</div>`;
   GROUPS.forEach((grp,gi)=>{
-    h += `<div class="sec-title">${grp.g}</div><div class="card">`;
-    grp.items.forEach((it,ii)=>{
-      const id = `${prefix}-${gi}-${ii}`;
-      const tag = it.t==="hi"?`<span class="tag hi">강추</span>`:it.t==="no"?`<span class="tag no">제외</span>`:"";
-      const star = it.t!=="no" ? `<button class="ic-star js-toggle" data-id="${id}" aria-label="가고싶음">★</button>` : `<span style="width:30px;flex:none"></span>`;
-      h += `<div class="item">${star}<div class="it-body">
-        <div class="it-name">${it.n}${tag}</div>${it.d?`<div class="it-desc">${it.d}</div>`:""}${it.sub?`<div class="it-sub">${it.sub}</div>`:""}
-        ${it.q?`<div style="margin-top:7px">${mapLink(it.q)}</div>`:""}${gallery(it.img)}${mallTree(it.q)}</div></div>`;
-    });
-    h += `</div>`;
+    const rows=grp.items.map((it,ii)=>({it,id:`${prefix}-${gi}-${ii}`})).filter(r=>!del[r.id]);
+    if(rows.length) h += `<div class="sec-title">${grp.g}</div><div class="card">`+rows.map(r=>itemHTML(r.it,r.id)).join("")+`</div>`;
   });
+  const ud=((STATE.ud&&STATE.ud[prefix])||[]).filter(it=>!del[it.id]);
+  if(ud.length) h += `<div class="sec-title">직접 추가</div><div class="card">`+ud.map(it=>itemHTML({n:it.n,sub:it.sub||"",t:""},it.id)).join("")+`</div>`;
+  h += udAddRow(prefix);
   target.innerHTML = h;
 }
 
 function renderDecide(){
-  let h = `<div class="intro">정해지면 체크. 15일 점심·카페·저녁은 확정.</div><div class="sec-title">결정 항목 <span class="pill">${DECISIONS.length}건</span></div>`;
-  DECISIONS.forEach((dc,i)=>{
-    const id = `dec-${i}`;
-    h += `<div class="card decision"><div class="check js-check" data-id="${id}"${dc.done?' data-default="1"':''}>
-      <div class="box">${CK}</div><div class="ck-body"><div class="ck-name">${dc.n}</div><div class="ck-sub">${dc.s}</div></div></div>
+  const del=STATE.del||{};
+  let h = `<div class="intro">정해지면 체크(=완료/삭선) · ✕로 삭제(별도) · 아래에서 직접 추가.</div>`;
+  DECISIONS.forEach((dc,i)=>{ const id=`dec-${i}`; if(del[id]) return;
+    h += `<div class="card decision"><div class="dec-top"><div class="check js-check" data-id="${id}"${dc.done?' data-default="1"':''}>
+      <div class="box">${CK}</div><div class="ck-body"><div class="ck-name">${dc.n}</div><div class="ck-sub">${dc.s}</div></div></div><button class="js-itemdel idel" data-id="${id}" title="삭제">✕</button></div>
       <div class="opts">${dc.opts.map(o=>`<span class="opt">${o}</span>`).join("")}</div></div>`;
   });
+  ((STATE.ud&&STATE.ud.decide)||[]).filter(it=>!del[it.id]).forEach(it=>{
+    h += `<div class="card decision"><div class="dec-top"><div class="check js-check" data-id="${it.id}"><div class="box">${CK}</div><div class="ck-body"><div class="ck-name">${it.n}</div></div></div><button class="js-itemdel idel" data-id="${it.id}" title="삭제">✕</button></div></div>`;
+  });
+  h += udAddRow("decide");
   $("#tab-decide").innerHTML = h;
 }
 function renderPack(){
-  let h = `<div class="intro">출발 전 / 현지 체크리스트.</div>`;
+  const del=STATE.del||{};
+  const row=(it,id)=>`<div class="check js-check" data-id="${id}"><div class="box">${CK}</div><div class="ck-body"><div class="ck-name">${it.n}</div>${it.s?`<div class="ck-sub">${it.s}</div>`:""}</div><button class="js-itemdel idel" data-id="${id}" title="삭제">✕</button></div>`;
+  let h = `<div class="intro">체크=완료(삭선) · ✕ 삭제(별도) · 아래에서 직접 추가.</div>`;
   PACK.forEach((grp,gi)=>{
-    h += `<div class="sec-title">${grp.g}</div><div class="card">`;
-    grp.items.forEach((it,ii)=>{ const id=`pack-${gi}-${ii}`;
-      h += `<div class="check js-check" data-id="${id}"><div class="box">${CK}</div><div class="ck-body"><div class="ck-name">${it.n}</div>${it.s?`<div class="ck-sub">${it.s}</div>`:""}</div></div>`; });
-    h += `</div>`;
+    const rows=grp.items.map((it,ii)=>({it,id:`pack-${gi}-${ii}`})).filter(r=>!del[r.id]);
+    if(rows.length) h += `<div class="sec-title">${grp.g}</div><div class="card">`+rows.map(r=>row(r.it,r.id)).join("")+`</div>`;
   });
+  const ud=((STATE.ud&&STATE.ud.pack)||[]).filter(it=>!del[it.id]);
+  if(ud.length) h += `<div class="sec-title">직접 추가</div><div class="card">`+ud.map(it=>row(it,it.id)).join("")+`</div>`;
+  h += udAddRow("pack");
   $("#tab-pack").innerHTML = h;
 }
 function renderInfo(){
@@ -917,6 +936,8 @@ document.addEventListener("click", e=>{
   const _fb=e.target.closest(".floorbtn"); if(_fb){ const mall=_fb.closest(".mall"); if(mall){ const fv=mall.querySelector(".floorview"); if(fv) fv.innerHTML=floorView(_fb.dataset.mq,+_fb.dataset.fi); mall.querySelectorAll(".floorbtn").forEach(b=>b.classList.toggle("sel",b===_fb)); } return; }
   const _foc=e.target.closest(".js-focus"); if(_foc&&_foc.dataset.q){ focusPlace(_foc.dataset.q); return; }
   const _md=e.target.closest(".js-memodel"); if(_md){ STATE.memos=(STATE.memos||[]).filter(m=>m.id!==_md.dataset.id); save(); renderMemo(); return; }
+  const _id=e.target.closest(".js-itemdel"); if(_id){ STATE.del=STATE.del||{}; STATE.del[_id.dataset.id]=1; save(); const p=tabOfId(_id.dataset.id); if(p) rerenderTabP(p); return; }
+  const _ua=e.target.closest(".js-udadd"); if(_ua){ const pre=_ua.dataset.prefix, inp=document.getElementById("udin_"+pre), v=((inp&&inp.value)||"").trim(); if(!v){ toast("이름을 적어주세요"); return; } STATE.ud=STATE.ud||{}; STATE.ud[pre]=STATE.ud[pre]||[]; STATE.ud[pre].push({id:"u"+pre+(STATE._seq=(STATE._seq||0)+1),n:v}); save(); rerenderTabP(pre); toast("추가됨"); return; }
   const el = e.target.closest(".js-toggle, .js-check");
   if(el){ STATE[el.dataset.id] = !el.classList.contains("is-on"); save(); applyState(); return; }
   const th = e.target.closest("[data-full]");
@@ -954,9 +975,9 @@ function renderMemo(){
   const esc=s=>(s||"").replace(/</g,"&lt;");
   const list=(STATE.memos||[]).map(m=>`<div class="memo-item"><div class="memo-h"><b>${esc(m.who)||"익명"}</b><button class="js-memodel delbtn" data-id="${m.id}">삭제</button></div><div class="memo-t">${esc(m.text)}</div></div>`).join("");
   $("#tab-memo").innerHTML=`<div class="intro">각자 가고 싶은 곳·먹고 싶은 것·요청을 자유롭게 적어요.<br>☁ 실시간 동기화 — 적으면 모두에게 바로 공유됩니다.</div>
-    <div class="card"><input id="memoWho" class="addinput" placeholder="이름(선택)" style="margin-bottom:7px"><textarea id="memoText" class="memo-input" placeholder="예: 19일 저녁은 야타이 가고 싶어요 / 라멘 한 번은 꼭!"></textarea><button id="memoAdd" class="bigbtn" style="margin-top:9px">＋ 메모 추가</button></div>
-    ${list?`<div class="card">${list}</div>`:`<div class="note" style="text-align:center;padding:14px">아직 메모가 없어요. 위에 적어보세요.</div>`}`;
-  const a=$("#memoAdd"); if(a) a.addEventListener("click",()=>{ const t=($("#memoText").value||"").trim(); if(!t){ toast("내용을 적어주세요"); return; } STATE.memos=STATE.memos||[]; STATE.memos.unshift({id:"m"+(STATE._seq=(STATE._seq||0)+1),who:($("#memoWho").value||"").trim(),text:t}); save(); renderMemo(); toast("메모 추가됨"); });
+    <div class="card"><input id="memoWho" class="addinput" placeholder="이름(선택)" style="margin-bottom:7px"><textarea id="memoText" class="memo-input" placeholder="예: 19일 저녁은 야타이 가고 싶어요 / 라멘 한 번은 꼭!"></textarea><button id="memoAdd" class="bigbtn" style="margin-top:9px">＋ 요청 추가</button></div>
+    ${list?`<div class="card">${list}</div>`:`<div class="note" style="text-align:center;padding:14px">아직 요청이 없어요. 위에 적어보세요.</div>`}`;
+  const a=$("#memoAdd"); if(a) a.addEventListener("click",()=>{ const t=($("#memoText").value||"").trim(); if(!t){ toast("내용을 적어주세요"); return; } STATE.memos=STATE.memos||[]; STATE.memos.unshift({id:"m"+(STATE._seq=(STATE._seq||0)+1),who:($("#memoWho").value||"").trim(),text:t}); save(); renderMemo(); toast("요청 추가됨"); });
 }
 /* ===== 실시간 동기화 (Supabase) ===== */
 const SB_URL="https://diqdtagnoevjljapsdnh.supabase.co";
