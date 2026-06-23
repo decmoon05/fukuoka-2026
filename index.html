@@ -139,7 +139,10 @@
   header.app h1{font-size:21px;} header.app .meta{font-size:13.5px;}
   /* 한눈에 칸 키움(글 안 짤리게) */
   .g-track{height:74px;} .gantt-day{margin:10px 0;}
-  .g-block{top:5px;bottom:5px;align-items:flex-start;padding:4px 6px;cursor:pointer;}
+  .g-block{top:5px;bottom:5px;align-items:flex-start;padding:4px 6px;cursor:grab;touch-action:none;}
+  .g-block.gdragging{opacity:.9;cursor:grabbing;box-shadow:0 5px 16px rgba(0,0,0,.45);z-index:6;}
+  #trash{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:#c0432e;color:#fff;font-weight:800;font-size:13px;padding:13px 20px;border-radius:14px;z-index:160;display:none;box-shadow:0 6px 22px rgba(192,67,46,.45);}
+  #trash.show{display:block;} #trash.over{background:#7e2a1f;transform:translateX(-50%) scale(1.08);}
   .g-block span{white-space:normal;font-size:10px;line-height:1.2;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;}
   .g-label{width:52px;font-size:13px;}
   .tag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle;}
@@ -318,6 +321,7 @@
 <button id="mapOpen">🗺 지도</button>
 <div class="toast" id="toast"></div>
 <div class="lb" id="lb"><img id="lbimg" src="" alt=""></div>
+<div id="trash">🗑️ 여기로 끌어다 놓으면 삭제</div>
 
 <script>
 /* ===================== 데이터 ===================== */
@@ -574,7 +578,7 @@ function renderOver(){
     <div class="card">
       <div class="g-axis"><div class="g-label"></div><div class="g-track">${hours.map(h=>`<span class="g-hr" style="left:${(h-AX0)/span*100}%">${h}</span>`).join("")}</div></div>
       ${rows}
-      <div class="note" style="margin-top:10px">막대 위치·길이는 <b>대략값</b> ([고정]만 정확) · 빈 구간=여유 · <b>막대를 누르면 삭제</b> · 자세한 건 ‘일정’ 탭</div>
+      <div class="note" style="margin-top:10px">막대 위치는 <b>대략값</b> · <b>막대를 좌우로 끌면 시간 변경</b>(30분 단위, 겹치면 거부) · <b>휴지통으로 끌면 삭제</b> · 자세한 건 ‘일정’ 탭</div>
       <div class="legend"><span style="color:#1f2a37;font-weight:900">■</span>고정 <span style="color:#0f766e;font-weight:900">■</span>확정 <span style="color:#9aa3ad;font-weight:900">■</span>초안 <span style="color:#e0a700;font-weight:900">■</span>미정/확인</div>
     </div>
     <div class="card"><div class="mc-sec" style="margin-top:0">＋ 시간표에 직접 추가 <span>겹치면 거부됨</span></div>
@@ -587,7 +591,8 @@ function renderOver(){
       <div class="rp-hint">그 시간대에 이미 일정이 있으면 추가되지 않습니다 · 추가하면 ‘일정’에도 들어갑니다.</div>
     </div>`;
 }
-function overlaps(d,start,dur){ const day=DAYS.find(x=>x.d===d); if(!day) return false; const e=start+dur/60; return mergedStops(day).some(s=>{ const m=/^(\d\d):(\d\d)$/.exec(timeOf(s)); if(!m) return false; const h=+m[1]+(+m[2])/60; return start<h+1 && e>h; }); }
+function overlaps(d,start,dur){ return overlapsExcept(d,start,dur,null); }
+function overlapsExcept(d,start,dur,key){ const day=DAYS.find(x=>x.d===d); if(!day) return false; const e=start+dur/60; return mergedStops(day).some(s=>{ if(key&&s._key===key) return false; const m=/^(\d\d):(\d\d)$/.exec(timeOf(s)); if(!m) return false; const h=+m[1]+(+m[2])/60; return start<h+1 && e>h; }); }
 function addTimedStop(d,startStr,text){ const day=DAYS.find(x=>x.d===d); STATE.adds=STATE.adds||{}; STATE.adds[d]=STATE.adds[d]||[]; const keys=mergedStops(day).map(s=>s._key); const id="a"+(STATE._seq=(STATE._seq||0)+1); STATE.adds[d].push({id,n:text,q:""}); STATE.order=STATE.order||{}; STATE.order[d]=keys.concat(id); STATE.times=STATE.times||{}; STATE.times[id]=startStr; save(); renderAll(); toast(d+"일 "+startStr+" 추가됨"); }
 
 /* 쇼핑몰/백화점 층별 트리 + 도면 (공식 확인분만) */
@@ -988,7 +993,6 @@ document.addEventListener("click", e=>{
   const _ua=e.target.closest(".js-udadd"); if(_ua){ udAdd(_ua.dataset.prefix); return; }
   const _ga=e.target.closest(".js-ganttadd"); if(_ga){ const dd=document.getElementById("gaDay").value, st=document.getElementById("gaStart").value, du=+document.getElementById("gaDur").value, tx=((document.getElementById("gaText")||{}).value||"").trim(); if(!tx){ toast("내용을 적어주세요"); return; } const m=/^(\d\d):(\d\d)$/.exec(st); const sh=+m[1]+(+m[2])/60; if(overlaps(dd,sh,du)){ toast("그 시간대에 이미 일정이 있어요"); return; } addTimedStop(dd,st,tx); return; }
   const _sd=e.target.closest(".js-stopdel"); if(_sd){ removeStop(_sd.dataset.d,_sd.dataset.key); return; }
-  const _gb=e.target.closest(".g-block"); if(_gb&&_gb.dataset.key){ if(confirm("이 일정을 삭제할까요?\n"+_gb.textContent.trim())) removeStop(_gb.dataset.day,_gb.dataset.key); return; }
   const el = e.target.closest(".js-toggle, .js-check");
   if(el){ STATE[el.dataset.id] = !el.classList.contains("is-on"); save(); applyState(); return; }
   const th = e.target.closest("[data-full]");
@@ -1000,6 +1004,30 @@ document.addEventListener("click", e=>{
 document.addEventListener("change", e=>{
   const ts=e.target.closest(".js-timesel");
   if(ts){ STATE.times=STATE.times||{}; const k=ts.dataset.k, v=ts.value; if(v) STATE.times[k]=v; else delete STATE.times[k]; TIMEUI=null; save(); rerenderPlan(); refreshMap(); }
+});
+/* ===== 한눈에 막대 드래그: 가로=시간변경, 휴지통=삭제 ===== */
+let GDRAG=null;
+document.addEventListener("pointerdown", e=>{
+  const b=e.target.closest(".g-block"); if(!b||!b.dataset.key) return;
+  const rect=b.parentElement.getBoundingClientRect();
+  GDRAG={b,rect,key:b.dataset.key,day:b.dataset.day,sx:e.clientX,ol:parseFloat(b.style.left)||0,w:parseFloat(b.style.width)||6,nl:parseFloat(b.style.left)||0,moved:false};
+  try{ b.setPointerCapture(e.pointerId); }catch(_){}
+  b.classList.add("gdragging"); const t=document.getElementById("trash"); if(t) t.classList.add("show");
+});
+document.addEventListener("pointermove", e=>{
+  if(!GDRAG) return; const dx=e.clientX-GDRAG.sx; if(Math.abs(dx)>3) GDRAG.moved=true;
+  let nl=GDRAG.ol + dx/GDRAG.rect.width*100; nl=Math.max(0,Math.min(100-GDRAG.w,nl)); GDRAG.nl=nl; GDRAG.b.style.left=nl+"%";
+  const t=document.getElementById("trash"); if(t){ const r=t.getBoundingClientRect(); GDRAG.overTrash=(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom); t.classList.toggle("over",!!GDRAG.overTrash); }
+});
+document.addEventListener("pointerup", ()=>{
+  if(!GDRAG) return; const g=GDRAG; GDRAG=null;
+  if(g.b) g.b.classList.remove("gdragging"); const t=document.getElementById("trash"); if(t){ t.classList.remove("show"); t.classList.remove("over"); }
+  if(g.overTrash){ removeStop(g.day,g.key); return; }
+  if(!g.moved) return;
+  let h=8+(g.nl/100)*15; h=Math.round(h*2)/2; h=Math.max(8,Math.min(23.5,h));
+  const nt=String(Math.floor(h)).padStart(2,"0")+":"+((h-Math.floor(h))>=0.5?"30":"00");
+  if(overlapsExcept(g.day,h,1,g.key)){ toast("그 시간대에 이미 일정이 있어요"); renderAll(); return; }
+  STATE.times=STATE.times||{}; STATE.times[g.key]=nt; save(); renderAll(); toast(nt+"로 변경");
 });
 
 /* ===================== 지도 (깔끔 · 연결선 없음) ===================== */
