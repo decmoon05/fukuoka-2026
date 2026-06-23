@@ -9,6 +9,8 @@
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
   :root{
     --bg:#f6f7f5; --card:#fff; --ink:#1f2a37; --sub:#5b6672; --line:#e9ebe7;
@@ -69,6 +71,8 @@
   .tlacts{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap;align-items:center;}
   .tlthumb{flex:none;width:54px;height:54px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#eef0ec;cursor:pointer;}
   .tlthumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .tlphoto{flex:none;width:96px;height:96px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#eef0ec;cursor:pointer;align-self:flex-start;}
+  .tlphoto img{width:100%;height:100%;object-fit:cover;display:block;}
   .st-tag{font-size:10px;font-weight:800;border-radius:6px;padding:1px 6px;margin-left:5px;vertical-align:middle;white-space:nowrap;}
   .st-tag.fix{color:#fff;background:#1f2a37;}      /* 고정 */
   .st-tag.conf{color:#0b5a54;background:#cdeae5;}  /* 확정 */
@@ -112,7 +116,15 @@
   .item:first-child{border-top:none;}
   .item .ic-star{flex:none;width:30px;height:30px;border:0;background:none;cursor:pointer;color:#cfd4cd;font-size:21px;line-height:1;padding:0;}
   .item .ic-star.is-on{color:var(--gold);}
-  .item .it-body{flex:1;min-width:0;} .item .it-name{font-weight:700;font-size:14.5px;} .item .it-sub{font-size:12px;color:var(--sub);margin-top:2px;}
+  .item .it-body{flex:1;min-width:0;} .item .it-name{font-weight:700;font-size:14.5px;} .item .it-sub{font-size:11.5px;color:var(--sub);margin-top:3px;}
+  .it-desc{font-size:12.5px;color:var(--ink);margin-top:3px;line-height:1.5;}
+  .numbadge{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--c,#0f766e);color:#fff;font-size:10px;font-weight:800;margin-right:6px;vertical-align:middle;}
+  .js-focus{cursor:pointer;}
+  .tlname.js-focus:active,.it-name.js-focus:active{opacity:.55;}
+  .memo-input{width:100%;min-height:72px;border:1px solid var(--line);border-radius:8px;padding:9px;font-size:13px;box-sizing:border-box;font-family:inherit;resize:vertical;}
+  .memo-item{padding:11px 0;border-top:1px solid var(--line);} .memo-item:first-child{border-top:none;}
+  .memo-h{display:flex;justify-content:space-between;align-items:center;} .memo-h b{font-size:13px;color:var(--teal-ink);}
+  .memo-t{font-size:13px;margin-top:5px;white-space:pre-wrap;line-height:1.55;}
   .tag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle;}
   .tag.hi{background:#fde9e6;color:#c0432e;} .tag.mid{background:#eef1ee;color:#5b6672;} .tag.no{background:#f0f0f0;color:#999;text-decoration:line-through;}
 
@@ -174,19 +186,89 @@
   .g-block span{font-size:9px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   /* 몰 층별 트리 */
   .mall{margin-top:9px;border:1px solid var(--line);border-radius:10px;background:#fafbfa;}
-  .mall-h{font-size:12px;font-weight:800;color:var(--teal-ink);padding:9px 10px 2px;}
+  .mall summary{cursor:pointer;font-size:12px;font-weight:800;color:var(--teal-ink);padding:9px 10px;list-style:none;}
+  .mall summary::-webkit-details-marker{display:none;}
+  .mall summary::before{content:"▸ ";} .mall[open] summary::before{content:"▾ ";}
+  .floorbtns{display:flex;flex-wrap:wrap;gap:4px;padding:0 10px 7px;}
+  .floorbtn{font-size:10.5px;font-weight:800;border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 8px;cursor:pointer;color:var(--sub);}
+  .floorbtn.sel{background:var(--teal);color:#fff;border-color:var(--teal);}
+  .floorview{padding:0 10px 4px;}
   .mtree{padding:0 10px 10px;}
   .mtf{display:flex;gap:8px;padding:5px 0;font-size:12px;border-top:1px dashed var(--line);}
   .mtf-f{flex:none;width:62px;font-weight:800;color:var(--teal-ink);}
   .mtf-v{flex:1;color:var(--ink);}
   .mallimg{margin-top:8px;cursor:pointer;border:1px solid var(--line);border-radius:8px;overflow:hidden;}
   .mallimg img{width:100%;display:block;}
+  /* 분할 지도 패널 */
+  #mappane{position:fixed;inset:0;z-index:150;background:#fff;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease;}
+  #mappane.open{transform:none;}
+  .mapbar{flex:none;display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line);font-weight:800;font-size:14px;}
+  .mapbar button{border:0;background:#eef0ec;border-radius:8px;width:30px;height:30px;font-size:15px;cursor:pointer;}
+  #bigmap{flex:1;min-height:200px;z-index:0;}
+  #mapctrl{flex:none;border-top:2px solid var(--line);padding:12px;max-height:52vh;overflow:auto;background:#fff;}
+  .bpin{width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.45);}
+  .rp-row{display:flex;gap:6px;align-items:center;margin-bottom:8px;}
+  .rp-row select{flex:1;min-width:0;font-size:12px;padding:7px;border:1px solid var(--line);border-radius:8px;background:#fff;}
+  #rpGo{flex:none;background:var(--teal);color:#fff;border:0;border-radius:8px;padding:8px 12px;font-weight:800;font-size:12px;cursor:pointer;}
+  .rpglink{flex:none;background:#2f6fd1;color:#fff;border-radius:8px;padding:8px 10px;font-weight:800;font-size:12px;text-decoration:none;}
+  .rp-hint{font-size:11px;color:var(--sub);margin:6px 0;line-height:1.6;}
+  .mc-sec{font-size:12.5px;font-weight:800;color:var(--teal-ink);margin:14px 0 8px;display:flex;align-items:center;gap:7px;border-top:1px solid var(--line);padding-top:11px;}
+  .mc-sec:first-child{border-top:none;padding-top:0;margin-top:0;}
+  .mc-sec span{font-size:10px;color:var(--sub);font-weight:600;}
+  .rp-arrow{font-weight:800;color:var(--sub);}
+  .df{font-size:12px;padding:7px 12px;}
+  .seg-btn{font-size:12.5px;padding:10px 11px;}
+  .mode-opt{font-size:12.5px;padding:11px 12px;margin-bottom:7px;}
+  .rp-row select{font-size:12.5px;padding:8px;}
+  .rp-row{margin-bottom:9px;}
+  .rp-opt{display:block;width:100%;text-align:left;background:#f3f5f2;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:12px;font-weight:700;cursor:pointer;}
+  .rp-opt.sel{background:#e3f1ef;border-color:var(--teal);color:var(--teal-ink);}
+  .mode-opt{display:block;width:100%;text-align:left;background:#f3f5f2;border:1px solid var(--line);border-radius:8px;padding:9px 10px;margin-bottom:6px;font-size:12px;font-weight:700;cursor:pointer;}
+  .mode-opt.sel{background:#e3f1ef;color:var(--teal-ink);}
+  .mode-opt.rec{border-color:var(--teal);box-shadow:0 0 0 1.5px var(--teal) inset;}
+  .catbadge{font-size:10px;font-weight:800;color:#2f6fd1;background:#e6eef9;border-radius:6px;padding:1px 6px;margin-left:5px;vertical-align:middle;}
+  .draghandle{flex:none;cursor:grab;color:#cbd1d7;font-size:14px;padding-top:2px;user-select:none;align-self:flex-start;line-height:1;}
+  .tltime.js-time{cursor:pointer;}
+  .tltime.editing{width:84px;flex:none;}
+  .tltime.editing select{width:84px;font-size:11px;padding:3px;border:1px solid var(--line);border-radius:6px;}
+  .sortable-ghost{opacity:.35;}
+  .sortable-chosen{background:#eef6f3;border-radius:10px;}
+  .dayfilter{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;}
+  .df{flex:none;font-size:11px;font-weight:800;padding:6px 9px;border:1px solid var(--line);border-radius:999px;background:#fff;cursor:pointer;color:var(--sub);}
+  .df.sel{background:var(--teal);color:#fff;border-color:var(--teal);}
+  .seg-btn{display:block;width:100%;text-align:left;font-size:11.5px;font-weight:700;background:#f3f5f2;border:1px solid var(--line);border-radius:8px;padding:7px 9px;margin-bottom:5px;cursor:pointer;}
+  .rp-sep{font-size:10.5px;color:var(--sub);font-weight:700;margin:10px 0 6px;border-top:1px dashed var(--line);padding-top:8px;}
+  .bpin.num{width:22px;height:22px;border-radius:50%;color:#fff;font-weight:800;font-size:12px;display:grid;place-items:center;border:2px solid #fff;}
+  /* 일정 추가 */
+  .addbtn{display:block;width:calc(100% + 6px);margin:1px 0 1px -10px;background:none;border:1px dashed #cfd9d5;color:var(--teal-ink);font-size:11px;font-weight:800;border-radius:8px;padding:4px;cursor:pointer;opacity:.75;}
+  .addbtn:active{opacity:1;}
+  .addform{background:#eef6f3;border:1px solid #cfe0db;border-radius:10px;padding:9px;margin:5px 0;}
+  .addinput{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:13px;box-sizing:border-box;}
+  .addrow{display:flex;gap:6px;margin-top:6px;}
+  .addrow button{flex:none;border:0;border-radius:8px;padding:7px 12px;font-weight:800;font-size:12px;cursor:pointer;}
+  .js-addgo{background:var(--teal);color:#fff;}
+  .js-addcancel{background:#e7e9e6;color:var(--sub);}
+  .addres{margin-top:8px;}
+  .addresbtn{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 9px;margin-bottom:5px;font-size:11.5px;cursor:pointer;line-height:1.4;}
+  .addresbtn.nogeo{color:var(--sub);font-style:italic;}
+  .tlstop.add{background:#f0f6f4;border-radius:10px;margin:3px 0;}
+  .tlstop.add::before{background:var(--gold);border-color:var(--gold);}
+  .delbtn{border:0;background:#fbe3df;color:#c0432e;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer;}
+  #mapOpen{position:fixed;right:14px;bottom:calc(80px + env(safe-area-inset-bottom));z-index:120;background:var(--teal);color:#fff;border:0;border-radius:999px;padding:11px 16px;font-weight:800;font-size:13px;box-shadow:0 4px 14px rgba(15,118,110,.4);cursor:pointer;}
+  @media(min-width:900px){
+    #app{width:50vw;}
+    nav.tabbar{width:50vw;}
+    #mapOpen{display:none;}
+    .mapbar #mapClose{display:none;}
+    #mappane{transform:none;left:auto;right:0;width:50vw;border-left:1px solid var(--line);}
+  }
   .lb{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;z-index:200;padding:14px;}
   .lb.show{display:flex;} .lb img{max-width:100%;max-height:100%;border-radius:10px;}
-  @media(min-width:620px){ header.app h1{font-size:20px;} #map{height:360px;} }
+  @media(min-width:620px){ header.app h1{font-size:20px;} .gmap{height:380px;} .tlphoto{width:128px;height:128px;} }
 </style>
 </head>
 <body>
+<div id="app">
 <header class="app">
   <div class="wrap">
     <div><h1>후쿠오카 여행 🇯🇵</h1>
@@ -203,10 +285,18 @@
   <section class="panel" id="tab-decide"></section>
   <section class="panel" id="tab-pack"></section>
   <section class="panel" id="tab-info"></section>
-  <div class="foot">여행 계획 초안 · 체크는 이 기기에 저장<br><button id="resetBtn">체크·선택 초기화</button></div>
+  <section class="panel" id="tab-memo"></section>
+  <div class="foot">여행 계획 초안 · ☁ 실시간 동기화(수정하면 모두에게 반영)<br><button id="resetBtn">내 체크·선택 초기화</button></div>
 </main>
 
 <nav class="tabbar" id="tabbar"></nav>
+</div><!-- /#app -->
+<aside id="mappane">
+  <div class="mapbar"><span>🗺 여행 지도</span><button id="mapClose" aria-label="닫기">✕</button></div>
+  <div id="bigmap"></div>
+  <div id="mapctrl"></div>
+</aside>
+<button id="mapOpen">🗺 지도</button>
 <div class="toast" id="toast"></div>
 <div class="lb" id="lb"><img id="lbimg" src="" alt=""></div>
 
@@ -236,6 +326,7 @@ const NAV = [
   {id:"decide",label:"결정", icon:'<circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>'},
   {id:"pack",  label:"준비물", icon:'<rect x="5" y="7" width="14" height="14" rx="2"/><path d="M9 7V5a3 3 0 0 1 6 0v2M9 12l2 2 4-4"/>'},
   {id:"info",  label:"정보", icon:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'},
+  {id:"memo",  label:"메모", icon:'<path d="M5 3h11l4 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M8 9h7M8 13h7M8 17h4"/>'},
 ];
 
 /* 1일차 동선 (한 바퀴: 숙소→텐진→다이묘→귀가). onestay 셀프체크인이라 중간 복귀 불필요 */
@@ -254,7 +345,10 @@ const DAYS = [
      {t:"11:15", tag:"고정", n:"공항 도착", s:"메인 3인 도착", q:"福岡空港", move:{start:"후쿠오카공항", segs:[{type:"train",line:"지하철 공항선",color:"#e8722b",to:"텐진",min:"약11분"},{type:"train",line:"西鉄 오무타선",color:"#c0392b",to:"니시테쓰히라오",min:"약3분"},{type:"walk",to:"숙소(高砂)",min:"약7분"}], total:"대략 40~50분(환승 포함)", gmaps:{o:"福岡空港", d:"高砂2-16-11 福岡市中央区"}}},
      {t:"12:00~", tag:"초안", n:"숙소 짐보관", s:"레지던스 타카사고 — 캐리어 보관", q:ACCOM, dir:true},
      {t:"점심", tag:"확정", n:"규카츠 모토무라 파르코점", s:"", q:"牛かつもと村 福岡パルコ店", img:"gyukatsu"},
-     {t:"쇼핑", tag:"초안", n:"텐진 쇼핑", s:"텐진 지하상가 → 다이토스테이션 → 탱큐마트390 → 파르코 → 무지", q:"天神地下街", img:"tenjin"},
+     {t:"오후", tag:"초안", n:"텐진 지하상가", s:"텐진역 지하 590m 쇼핑가 · 패션·잡화·먹거리", q:"天神地下街", img:"tenjin"},
+     {t:"오후", tag:"초안", n:"다이토스테이션", s:"대형 오락실(크레인·게임) · 무료입장", q:"タイトーステーション 福岡天神店"},
+     {t:"오후", tag:"초안", n:"탱큐마트390", s:"전품목 390엔 잡화·악세서리", q:"サンキューマート 天神"},
+     {t:"오후", tag:"초안", n:"텐진 파르코 (백화점)", s:"무지·키디랜드·리락쿠마·LUSH·빌리지뱅가드 입점", q:"天神パルコ", malls:["天神パルコ"]},
      {t:"카페", tag:"확정", n:"재즈앤카페 백스테이지", s:"저녁 재즈 라이브 중심 (영업시간 확인)", q:"ジャズ喫茶 バックステージ 福岡 大名", img:"cafe"},
      {t:"16:00", tag:"고정", n:"숙소 체크인", s:"onestay 셀프체크인", q:ACCOM, dir:true},
      {t:"저녁", tag:"확정", n:"와사몬 쿠시카츠", s:"17시 오픈 · 熊本串カツ わさもん酒場 天神大名店", q:"わさもん酒場 天神大名店", img:"kushikatsu"},
@@ -302,65 +396,65 @@ const DAYS = [
 
 const FOOD = [
   {g:"우선순위 높음", items:[
-    {n:"규카츠", sub:"모토무라 파르코점 / 교토카츠규 텐진거리점 / 우시카츠모토무라 텐진니시도리점", q:"牛かつもと村 福岡パルコ店", t:"hi", img:"gyukatsu"},
-    {n:"쿠시카츠", sub:"쿠마모토 쿠시카츠 와사몬사카바 텐진다이묘점", q:"わさもん酒場 天神大名店", t:"hi", img:"kushikatsu"},
-    {n:"야타이 (포장마차)", sub:"나카스 포장마차 거리", q:"中洲 屋台", t:"hi", img:"yatai"},
-    {n:"명란덮밥 + 츠케멘", sub:"매장 미지정", q:"明太子 つけ麺 福岡", t:"hi", img:"tsukemen"},
+    {n:"규카츠", sub:"모토무라 파르코점 / 교토카츠규 텐진거리점 / 우시카츠모토무라 텐진니시도리점", d:"레어로 튀긴 소고기커틀릿을 돌판에 구워먹는 정식 · 대략 ¥1,800~2,500", q:"牛かつもと村 福岡パルコ店", t:"hi", img:"gyukatsu"},
+    {n:"쿠시카츠", sub:"쿠마모토 쿠시카츠 와사몬사카바 텐진다이묘점", d:"꼬치튀김 이자카야(17시 오픈) · 대략 ¥2,000~3,500", q:"わさもん酒場 天神大名店", t:"hi", img:"kushikatsu"},
+    {n:"야타이 (포장마차)", sub:"나카스 포장마차 거리", d:"강변 포장마차 — 라멘·오뎅·꼬치, 현금만 · 대략 ¥2,000~4,000", q:"中洲 屋台", t:"hi", img:"yatai"},
+    {n:"명란덮밥 + 츠케멘", sub:"매장 미지정", d:"명란 덮밥과 진한 츠케멘 · 대략 ¥1,000~1,500", q:"明太子 つけ麺 福岡", t:"hi", img:"tsukemen"},
   ]},
   {g:"우선순위 중", items:[
-    {n:"돈코츠 라멘", sub:"이치무진 고후쿠마치점 / 이치란 본사 총본점 / 신신라멘", q:"一蘭 本社総本店 福岡", t:"mid", img:"tonkotsu"},
-    {n:"스시", sub:"스시로 오야후코도리점 / 스시킨", q:"スシロー 親富孝通り店", t:"mid", img:"sushi"},
-    {n:"카레", sub:"나일 하카타 한큐점", q:"ナイル 博多阪急", t:"mid", img:"curry"},
-    {n:"멘타이", sub:"원조 하카타 멘타이쥬", q:"元祖博多めんたい重", t:"mid", img:"mentai"},
-    {n:"소바", sub:"소바차야 하나모토 신텐마치점", q:"そば茶屋 華元 新天町 福岡", t:"mid", img:"soba"},
-    {n:"유부초밥 / 패밀리", sub:"이나리노콘 · 사이제리야 텐진다이묘점 · 가정식", q:"いなりのこん 福岡", t:"mid", img:"inari"},
+    {n:"돈코츠 라멘", sub:"이치무진 고후쿠마치점 / 이치란 본사 총본점 / 신신라멘", d:"후쿠오카 대표 돼지뼈 육수 라멘 · 대략 ¥900~1,200", q:"一蘭 本社総本店 福岡", t:"mid", img:"tonkotsu"},
+    {n:"스시", sub:"스시로 오야후코도리점 / 스시킨", d:"회전초밥(스시로) 접시당 ¥120~ · 대략 ¥1,500~3,000", q:"スシロー 親富孝通り店", t:"mid", img:"sushi"},
+    {n:"카레", sub:"나일 하카타 한큐점", d:"유럽풍 카츠카레 · 대략 ¥1,200~1,800", q:"ナイル 博多阪急", t:"mid", img:"curry"},
+    {n:"멘타이", sub:"원조 하카타 멘타이쥬", d:"명란을 통째 올린 명란중(덮밥) · 대략 ¥1,800~2,500", q:"元祖博多めんたい重", t:"mid", img:"mentai"},
+    {n:"소바", sub:"소바차야 華元(하나겐) 신텐마치점", d:"메밀국수·자루소바 전문 · 대략 ¥800~1,500", q:"そば茶屋 華元 新天町 福岡", t:"mid", img:"soba"},
+    {n:"유부초밥 / 패밀리", sub:"이나리노콘 · 사이제리야 텐진다이묘점 · 가정식", d:"이나리(유부초밥)·패밀리레스토랑 · 대략 ¥500~1,200", q:"いなりのこん 福岡", t:"mid", img:"inari"},
   ]},
   {g:"숙소 근처", items:[
-    {n:"웃챠리", sub:"숙소 인근 이자카야", q:"うっちゃり 福岡 高砂", t:"mid", img:"izakaya"},
-    {n:"요시노야 나노카와점", sub:"규동", q:"吉野家 那の川店", t:"mid", img:"gyudon"},
-    {n:"시로가네라멘 쿄야", sub:"돈코츠쇼유", q:"白金ラーメン 京家 福岡", t:"mid"},
+    {n:"웃챠리", sub:"숙소 인근 이자카야", d:"숙소 근처 선술집 — 안주·술 · 대략 ¥2,000~3,500", q:"うっちゃり 福岡 高砂", t:"mid", img:"izakaya"},
+    {n:"요시노야 나노카와점", sub:"규동", d:"규동(소고기덮밥) 체인 · 대략 ¥500~800", q:"吉野家 那の川店", t:"mid", img:"gyudon"},
+    {n:"시로가네라멘 쿄야", sub:"돈코츠쇼유", d:"돈코츠+간장 라멘 · 대략 ¥800~1,000", q:"白金ラーメン 京家 福岡", t:"mid", img:"tonkotsu"},
   ]},
   {g:"디저트 · 카페", items:[
-    {n:"하카타역 후르츠산도", sub:"오픈런 · 효리 희망", q:"フルーツサンド 博多駅", t:"hi", img:"fruitsando"},
-    {n:"파티쉐리 몽쉐르", sub:"디저트", q:"モンシェール 福岡", t:"mid", img:"cake"},
-    {n:"재즈앤카페 백스테이지", sub:"15일 식후 카페 (확정)", q:"ジャズ喫茶 バックステージ 福岡 大名", t:"mid", img:"cafe"},
+    {n:"하카타역 후르츠산도", sub:"오픈런 · 효리 희망", d:"생과일 샌드위치 전문 · 대략 ¥600~1,200", q:"フルーツサンド 博多駅", t:"hi", img:"fruitsando"},
+    {n:"파티쉐리 몽쉐르", sub:"디저트", d:"도지마롤 등 롤케이크·디저트 · 대략 ¥400~", q:"モンシェール 福岡", t:"mid", img:"cake"},
+    {n:"재즈앤카페 백스테이지", sub:"15일 식후 카페 (확정)", d:"재즈 라이브 킷사텐(저녁 중심) · 음료+차지 대략 ¥1,500~", q:"ジャズ喫茶 バックステージ 福岡 大名", t:"mid", img:"cafe"},
   ]},
-  {g:"반려됨", items:[ {n:"삼겹살 · 육회", sub:"이번엔 제외", q:"", t:"no"} ]},
+  {g:"반려됨", items:[ {n:"삼겹살 · 육회", sub:"이번엔 제외", d:"", q:"", t:"no"} ]},
 ];
 
 const PLACES = [
   {g:"관광 · 체험", items:[
-    {n:"호빵맨 어린이뮤지엄", sub:"10:00–17:00 (최종입장 16:00) · 16일", q:"福岡アンパンマンこどもミュージアム", img:"riverain"},
-    {n:"유카타 체험", sub:"18일 · 오호리공원 인근", q:"着物レンタル 福岡 大濠公園", img:"yukata"},
-    {n:"오호리 공원", sub:"산책 · 보트", q:"大濠公園", img:"ohori"},
-    {n:"후쿠오카 미술관", sub:"오호리공원 내", q:"福岡市美術館", img:"artmuseum"},
-    {n:"호국신사 오도리", sub:"19일 오전 · 벼룩시장", q:"福岡県護国神社", img:"gokoku"},
-    {n:"고쿠라 기온 다이코 축제", sub:"19일 · 기타큐슈 고쿠라성", q:"小倉城 小倉祇園太鼓", img:"festival"},
-    {n:"다자이후", sub:"여유 시 후보", q:"太宰府天満宮", img:"dazaifu"},
-    {n:"마린월드 우미노나카미치", sub:"여유 시 후보", q:"マリンワールド海の中道", img:"marineworld"},
-    {n:"텐진중앙공원 · 케고공원", sub:"텐진 도심 공원", q:"警固公園 天神", img:"city"},
+    {n:"호빵맨 어린이뮤지엄", sub:"10:00–17:00 (최종입장 16:00) · 16일", d:"호빵맨 테마 실내 어린이시설(리버레인 5F) · 입장 대략 ¥2,000", q:"福岡アンパンマンこどもミュージアム", img:"riverain"},
+    {n:"유카타 체험", sub:"18일 · 오호리공원 인근", d:"유카타 대여·착장 후 산책 · 대략 ¥3,000~5,000", q:"着物レンタル 福岡 大濠公園", img:"yukata"},
+    {n:"오호리 공원", sub:"산책 · 보트", d:"큰 호수 도심공원, 산책·보트 · 입장 무료", q:"大濠公園", img:"ohori"},
+    {n:"후쿠오카 미술관", sub:"오호리공원 내", d:"근현대·고미술관 · 입장 대략 ¥200~", q:"福岡市美術館", img:"artmuseum"},
+    {n:"호국신사 오도리", sub:"19일 오전 · 벼룩시장", d:"신사 + 정기 벼룩시장(개최일 확인 필요)", q:"福岡県護国神社", img:"gokoku"},
+    {n:"고쿠라 기온 다이코 축제", sub:"19일 · 기타큐슈 고쿠라성", d:"고쿠라성 일대 태고(북) 축제 · 7/19 · 관람 무료", q:"小倉城 小倉祇園太鼓", img:"festival"},
+    {n:"다자이후", sub:"여유 시 후보", d:"학문의 신 텐만구 + 참배길 먹거리 · 참배 무료", q:"太宰府天満宮", img:"dazaifu"},
+    {n:"마린월드 우미노나카미치", sub:"여유 시 후보", d:"바다 수족관(돌고래쇼) · 입장 대략 ¥2,500", q:"マリンワールド海の中道", img:"marineworld"},
+    {n:"텐진중앙공원 · 케고공원", sub:"텐진 도심 공원", d:"텐진 도심 휴식 공원 · 무료", q:"警固公園 天神", img:"city"},
   ]},
   {g:"쇼핑 — 텐진", items:[
-    {n:"텐진 지하상가", sub:"", q:"天神地下街", img:"tenjin"},
-    {n:"다이토스테이션", sub:"오락실", q:"タイトーステーション 福岡天神店"},
-    {n:"탱큐마트 390", sub:"390엔샵", q:"サンキューマート 天神"},
-    {n:"텐진 파르코", sub:"무지·키디랜드·리락쿠마·lush·빌리지뱅가드·can do", q:"天神パルコ"},
-    {n:"다이소 / 세리아", sub:"100엔샵", q:"ダイソー 天神"},
-    {n:"스탠다드 프로덕트", sub:"다이소 상위 브랜드", q:"スタンダードプロダクツ 福岡"},
-    {n:"로프트", sub:"화장품·잡화", q:"ロフト 天神"},
-    {n:"베이프 후쿠오카", sub:"스트릿", q:"BAPE STORE 福岡"},
-    {n:"Ruby's 니시도리점", sub:"빈티지", q:"Ruby's 西通り 福岡"},
-    {n:"돈키호테 텐진점", sub:"17일", q:"ドン・キホーテ 天神本店", img:"donki"},
+    {n:"텐진 지하상가", sub:"", d:"텐진역 지하 590m 쇼핑가(패션·잡화·먹거리)", q:"天神地下街", img:"tenjin"},
+    {n:"다이토스테이션", sub:"오락실", d:"대형 오락실(크레인·게임) · 무료입장", q:"タイトーステーション 福岡天神店"},
+    {n:"탱큐마트 390", sub:"390엔샵", d:"전품목 390엔 잡화·악세서리", q:"サンキューマート 天神"},
+    {n:"텐진 파르코", sub:"무지·키디랜드·리락쿠마·lush·빌리지뱅가드", d:"백화점 — 캐릭터·잡화·무지 입점(아래 층별 안내)", q:"天神パルコ"},
+    {n:"다이소 / 세리아", sub:"100엔샵", d:"100엔 균일 생활잡화", q:"ダイソー 天神"},
+    {n:"스탠다드 프로덕트", sub:"다이소 상위 브랜드", d:"다이소의 고급 라인 디자인 잡화", q:"スタンダードプロダクツ 福岡"},
+    {n:"로프트", sub:"화장품·잡화", d:"문구·잡화·화장품 라이프스타일샵", q:"ロフト 天神"},
+    {n:"베이프 후쿠오카", sub:"스트릿", d:"스트릿 브랜드 A BATHING APE", q:"BAPE STORE 福岡"},
+    {n:"Ruby's 니시도리점", sub:"빈티지", d:"빈티지·구제 의류", q:"Ruby's 西通り 福岡"},
+    {n:"돈키호테 텐진점", sub:"17일", d:"할인 잡화 대형점(약 6층, 식품·코스메·기념품)", q:"ドン・キホーテ 天神本店", img:"donki"},
   ]},
   {g:"쇼핑 — 하카타", items:[
-    {n:"한큐 하카타", sub:"momotaro greeting", q:"博多阪急", img:"hakata"},
-    {n:"로피아 (하카타 요도바시)", sub:"식료품", q:"ロピア ヨドバシ博多"},
-    {n:"세리아 (하카타 마루이)", sub:"", q:"セリア 博多マルイ"},
-    {n:"시마무라", sub:"의류", q:"しまむら 博多"},
-    {n:"만다라케 후쿠오카점", sub:"서브컬처", q:"まんだらけ 福岡"},
-    {n:"하카타역 코인락커", sub:"하카타구치 지하1층 세븐 옆", q:"博多駅 コインロッカー"},
+    {n:"한큐 하카타", sub:"momotaro greeting", d:"하카타역 백화점(식품·패션) · 아래 층별 안내", q:"博多阪急", img:"hakata"},
+    {n:"로피아 (하카타 요도바시)", sub:"식료품", d:"대형 식품 디스카운트 + 요도바시 가전", q:"ロピア ヨドバシ博多"},
+    {n:"세리아 (하카타 마루이)", sub:"", d:"100엔샵(마루이 백화점 내)", q:"セリア 博多マルイ"},
+    {n:"시마무라", sub:"의류", d:"저가 패션·생활의류 체인", q:"しまむら 博多"},
+    {n:"만다라케 후쿠오카점", sub:"서브컬처", d:"중고 만화·피규어·서브컬처", q:"まんだらけ 福岡"},
+    {n:"하카타역 코인락커", sub:"하카타구치 지하1층 세븐 옆", d:"역 짐보관함(귀국일 짐 보관용)", q:"博多駅 コインロッカー"},
   ]},
-  {g:"기타", items:[ {n:"술 구매처 (후보 2곳)", sub:"구매 확정 · 면세한도 확인", q:"酒 ディスカウント 福岡 天神"} ]},
+  {g:"기타", items:[ {n:"술 구매처 (후보 2곳)", sub:"구매 확정 · 면세한도 확인", d:"주류 디스카운트(면세한도 확인)", q:"酒 ディスカウント 福岡 天神"} ]},
 ];
 
 const DECISIONS = [
@@ -399,6 +493,7 @@ const TRAIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 const mapLink = q => q ? `<a class="mlink" target="_blank" rel="noopener" href="${mapU(q)}">${PIN}지도</a>` : "";
 const dirLink = q => q ? `<a class="mlink dir" target="_blank" rel="noopener" href="${dirU(q)}">${ARROW}길찾기</a>` : "";
 const stTag = tag => { if(!tag) return ""; const m={"고정":"fix","확정":"conf","초안":"draft","초안/확인":"und","미정":"und","영석님":"ys"}; return `<span class="st-tag ${m[tag]||'draft'}">${tag}</span>`; };
+const DESC={}; FOOD.concat(PLACES).forEach(g=>g.items.forEach(it=>{ if(it.q&&it.d) DESC[it.q]=it.d; }));
 function renderMove(mv){
   if(!mv) return "";
   if(typeof mv==="string") return `<div class="move">${TRAIN}${mv}</div>`;
@@ -447,13 +542,13 @@ function renderOver(){
   let rows="";
   DAYS.forEach(day=>{
     let cursor=null, blocks="";
-    day.stops.forEach(st=>{
-      let r=approxRange(st.t);
+    mergedStops(day).forEach(st=>{
+      let r=approxRange(timeOf(st));
       if(!r){ const s=cursor!=null?cursor:10; r=[s,s+1.3]; }
       if(cursor!=null && r[0]<cursor){ const d=r[1]-r[0]; r=[cursor,cursor+d]; }
       cursor=r[1];
       const left=(r[0]-AX0)/span*100, w=Math.max((r[1]-r[0])/span*100,3.5);
-      blocks+=`<div class="g-block" style="left:${left}%;width:${w}%;background:${TAGCOLOR[st.tag]||'#9aa3ad'}"><span>${st.n}</span></div>`;
+      blocks+=`<div class="g-block" style="left:${left}%;width:${w}%;background:${st.tag?TAGCOLOR[st.tag]:(st._add?'#16a34a':'#9aa3ad')}"><span>${st.n}</span></div>`;
     });
     rows+=`<div class="gantt-day"><div class="g-label" style="color:var(${day.c})">${day.d}일<br><span>${day.dow}</span></div><div class="g-track">${hours.map(h=>`<span class="g-grid" style="left:${(h-AX0)/span*100}%"></span>`).join("")}${blocks}</div></div>`;
   });
@@ -485,51 +580,250 @@ const MALL = {
     {f:"B1F", v:["식품"]},{f:"2~5F", v:["의류·코스메·잡화 등 (층별 공식 미확인)"]},
   ], note:"※ 총 6층(B1~5F). 공식 층별 도면 이미지 없음."},
 };
+function floorView(q,i){ const f=MALL[q]&&MALL[q].tree[i]; if(!f) return ""; const img=f.img?`<div class="mallimg" data-full="img/${f.img}"><img loading="lazy" src="img/${f.img}" alt="도면"></div>`:""; return `<div class="mtf"><span class="mtf-f">${f.f}</span><span class="mtf-v">${f.v.join(" · ")}</span></div>${img}`; }
 function mallTree(q){
   const m=MALL[q]; if(!m) return "";
-  const floors=m.tree.map(f=>`<div class="mtf"><span class="mtf-f">${f.f}</span><span class="mtf-v">${f.v.join(" · ")}</span></div>`).join("");
-  const img=m.floor?`<div class="mallimg" data-full="img/${m.floor}"><img loading="lazy" src="img/${m.floor}" alt="층별안내"></div>`:"";
-  const guide=m.guide?`<a class="mlink" target="_blank" rel="noopener" href="${m.guide}">공식 층별안내 ↗</a>`:"";
-  return `<div class="mall"><div class="mall-h">🏬 층별 안내${m.floor?" · 도면(탭하면 확대)":""}</div><div class="mtree">${floors}${m.note?`<div class="note">${m.note}</div>`:""}<div style="margin-top:8px">${guide}</div>${img}</div></div>`;
+  const fb=m.tree.map((f,i)=>`<button class="floorbtn${i===0?" sel":""}" data-mq="${q}" data-fi="${i}">${f.f}</button>`).join("");
+  const overview=m.floor?`<div class="mallimg" data-full="img/${m.floor}"><img loading="lazy" src="img/${m.floor}" alt="전체 도면"></div>`:"";
+  const guide=m.guide?`<div style="margin-top:7px"><a class="mlink" target="_blank" rel="noopener" href="${m.guide}">공식 층별안내 ↗</a></div>`:"";
+  return `<details class="mall"><summary>🏬 층별 안내${m.floor?" · 도면":""} (펼치기)</summary>
+    <div class="floorbtns">${fb}</div><div class="floorview">${floorView(q,0)}</div>
+    ${overview}${m.note?`<div class="note">${m.note}</div>`:""}${guide}</details>`;
 }
 
-function renderPlan(){
-  const stops = ROUTE;
-  const gO=enc(ACCOM), gD=ROUTE.map(s=>enc(s.q)).join("+to:")+"+to:"+gO;
-  let mapcard = `<div class="card">
-    <div class="sec-title" style="margin-top:0">📍 1일차 동선 <span class="pill">구글지도</span></div>
-    <iframe class="gmap" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q=${enc("天神 福岡")}&z=14&output=embed"></iframe>
-    <a class="bigbtn" id="grouteBtn" target="_blank" rel="noopener" href="#">${ARROW.replace('stroke="currentColor"','stroke="white"')}구글맵에서 전체 경로 보기(5곳)</a>
-    <div class="note">구글지도(텐진 일대) · 5곳 전체 경로/길찾기는 위 버튼 · 순서 변경은 영석님 결정.</div>
-  </div>`;
+/* ===== 여행 지도 (우측 절반 · 전체 핀 · 경로찾기) ===== */
+const CAT_C={stay:"#0b5a54",food:"#ef6f5a",sight:"#2f7fd1",shop:"#7b59d1"};
+const PINS=[
+ {l:"숙소 타카사고",lat:33.5800,lon:130.4062,cat:"stay",q:"高砂2-16-11 福岡市中央区"},
+ {l:"후쿠오카공항",lat:33.5868,lon:130.4474,cat:"sight",q:"福岡空港"},
+ {l:"규카츠 모토무라(파르코)",lat:33.5913,lon:130.3997,cat:"food",q:"牛かつもと村 福岡パルコ店",img:"gyukatsu"},
+ {l:"와사몬 쿠시카츠",lat:33.5903,lon:130.3958,cat:"food",q:"わさもん酒場 天神大名店",img:"kushikatsu"},
+ {l:"재즈카페 백스테이지",lat:33.5893,lon:130.3962,cat:"food",q:"ジャズ喫茶 バックステージ 福岡 大名",img:"cafe"},
+ {l:"나카스 야타이",lat:33.5914,lon:130.4071,cat:"food",q:"中洲 屋台",img:"yatai"},
+ {l:"이치란 본사총본점",lat:33.5700,lon:130.4060,cat:"food",q:"一蘭 本社総本店 福岡",img:"tonkotsu"},
+ {l:"스시로 오야후코도리",lat:33.5960,lon:130.3990,cat:"food",q:"スシロー 親富孝通り店",img:"sushi"},
+ {l:"카레 나일(한큐)",lat:33.5893,lon:130.4205,cat:"food",q:"ナイル 博多阪急",img:"curry"},
+ {l:"원조 멘타이쥬",lat:33.5905,lon:130.4010,cat:"food",q:"元祖博多めんたい重",img:"mentai"},
+ {l:"소바 하나겐",lat:33.5915,lon:130.4000,cat:"food",q:"そば茶屋 華元 新天町 福岡",img:"soba"},
+ {l:"웃챠리",lat:33.5805,lon:130.4060,cat:"food",q:"うっちゃり 福岡 高砂",img:"izakaya"},
+ {l:"요시노야 나노카와",lat:33.5728,lon:130.4052,cat:"food",q:"吉野家 那の川店",img:"gyudon"},
+ {l:"후르츠산도(하카타역)",lat:33.5900,lon:130.4200,cat:"food",q:"フルーツサンド 博多駅",img:"fruitsando"},
+ {l:"써니 나노카와(마트)",lat:33.5726,lon:130.4050,cat:"food",q:"サニー 那の川店"},
+ {l:"호빵맨뮤지엄",lat:33.5945,lon:130.4070,cat:"sight",q:"福岡アンパンマンこどもミュージアム",img:"riverain"},
+ {l:"오호리공원",lat:33.5862,lon:130.3762,cat:"sight",q:"大濠公園",img:"ohori"},
+ {l:"후쿠오카 미술관",lat:33.5900,lon:130.4017,cat:"sight",q:"福岡市美術館",img:"artmuseum"},
+ {l:"호국신사",lat:33.6064,lon:130.4180,cat:"sight",q:"福岡県護国神社",img:"gokoku"},
+ {l:"고쿠라성(축제)",lat:33.8845,lon:130.8743,cat:"sight",q:"小倉城 小倉祇園太鼓",img:"festival"},
+ {l:"다자이후",lat:33.5128,lon:130.5239,cat:"sight",q:"太宰府天満宮",img:"dazaifu"},
+ {l:"마린월드",lat:33.6608,lon:130.3634,cat:"sight",q:"マリンワールド海の中道",img:"marineworld"},
+ {l:"케고공원",lat:33.5840,lon:130.3942,cat:"sight",q:"警固公園 天神",img:"city"},
+ {l:"유카타 체험(오호리 인근)",lat:33.5870,lon:130.3800,cat:"sight",q:"着物レンタル 福岡 大濠公園",img:"yukata"},
+ {l:"텐진 지하상가",lat:33.5896,lon:130.3997,cat:"shop",q:"天神地下街",img:"tenjin"},
+ {l:"다이토스테이션",lat:33.5919,lon:130.3987,cat:"shop",q:"タイトーステーション 福岡天神店"},
+ {l:"탱큐마트390",lat:33.5915,lon:130.3980,cat:"shop",q:"サンキューマート 天神"},
+ {l:"텐진 파르코",lat:33.5913,lon:130.3997,cat:"shop",q:"天神パルコ"},
+ {l:"다이소 텐진",lat:33.5939,lon:130.3982,cat:"shop",q:"ダイソー 天神"},
+ {l:"스탠다드프로덕트",lat:33.5912,lon:130.3996,cat:"shop",q:"スタンダードプロダクツ 福岡"},
+ {l:"로프트",lat:33.5928,lon:130.3985,cat:"shop",q:"ロフト 天神"},
+ {l:"베이프 후쿠오카",lat:33.5905,lon:130.3970,cat:"shop",q:"BAPE STORE 福岡"},
+ {l:"Ruby's 니시도리",lat:33.5908,lon:130.3968,cat:"shop",q:"Ruby's 西通り 福岡"},
+ {l:"돈키호테 텐진본점",lat:33.5887,lon:130.3990,cat:"shop",q:"ドン・キホーテ 天神本店",img:"donki"},
+ {l:"한큐 하카타",lat:33.5893,lon:130.4205,cat:"shop",q:"博多阪急",img:"hakata"},
+ {l:"마루이 하카타",lat:33.5890,lon:130.4192,cat:"shop",q:"博多マルイ"},
+ {l:"만다라케",lat:33.5908,lon:130.3975,cat:"shop",q:"まんだらけ 福岡"},
+ {l:"하카타역(코인락커)",lat:33.5900,lon:130.4199,cat:"shop",q:"博多駅 コインロッカー",img:"hakata"},
+];
+let BIGMAP=null, routeLayer=null, pinLayer=null, CURDAY="all", MARKERS={};
+const COORD={}; PINS.forEach(p=>{ COORD[p.q]={lat:p.lat,lon:p.lon,cat:p.cat,img:p.img,l:p.l}; });
+function dayseq(d){ const day=DAYS.find(x=>x.d===d); if(!day) return []; return mergedStops(day).filter(s=> s._add? !!s.lat : (s.q&&COORD[s.q])).map(s=> s._add?{lat:s.lat,lon:s.lon,cat:"sight",img:null,name:s.n,q:s.q}:{...COORD[s.q],name:s.n,q:s.q}); }
+function pinIcon(p,num){
+  const lbl=num?String(num):"";
+  if(lbl){ const w=lbl.length>1?(11+lbl.length*6):22; return L.divIcon({className:"",html:`<div class="bpin num" style="background:${CAT_C[p.cat]};width:${w}px">${lbl}</div>`,iconSize:[w,22],iconAnchor:[w/2,11]}); }
+  return L.divIcon({className:"",html:`<div class="bpin" style="background:${CAT_C[p.cat]}"></div>`,iconSize:[15,15],iconAnchor:[7,7]});
+}
+function addPin(p,num){ const thumb=p.img&&IMG[p.img]?`<img src="img/${IMG[p.img][0]}" style="width:100%;border-radius:6px;margin:6px 0">`:""; const mk=L.marker([p.lat,p.lon],{icon:pinIcon(p,num)}).addTo(pinLayer).bindPopup(`<b>${num?num+". ":""}${p.name||p.l}</b>${thumb}<div style="margin-top:4px"><a href="${mapU(p.q)}" target="_blank" rel="noopener">구글맵 ↗</a> · <a href="${dirU(p.q)}" target="_blank" rel="noopener">길찾기</a></div>`); if(p.q) MARKERS[p.q]=mk; }
+function focusPlace(q){
+  if(!BIGMAP||!q) return;
+  if(!MARKERS[q]) setFilter("all");
+  const mk=MARKERS[q]; if(!mk) return;
+  const mp=document.getElementById("mappane"); if(window.innerWidth<900&&mp) mp.classList.add("open");
+  setTimeout(()=>{ BIGMAP.invalidateSize(); BIGMAP.setView(mk.getLatLng(),16); mk.openPopup(); },220);
+}
+function buildBigMap(){
+  const host=document.getElementById("bigmap"); if(!host) return;
+  if(typeof L==="undefined"){ host.innerHTML='<div class="mapfail">지도를 불러오지 못했습니다(인터넷 필요)</div>'; return; }
+  BIGMAP=L.map("bigmap");
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{maxZoom:20,subdomains:"abcd",attribution:"© OpenStreetMap © CARTO"}).addTo(BIGMAP);
+  pinLayer=L.layerGroup().addTo(BIGMAP);
+  routeLayer=L.layerGroup().addTo(BIGMAP);
+  setFilter("all");
+}
+function setFilter(d){
+  if(!BIGMAP) return;
+  CURDAY=d;
+  routeLayer.clearLayers(); pinLayer.clearLayers(); MARKERS={};
+  const seen={}, jit=p=>{ const k=p.lat.toFixed(5)+","+p.lon.toFixed(5), n=seen[k]||0; seen[k]=n+1; return n?{...p,lat:p.lat+0.00045*n,lon:p.lon+0.00045*n}:p; };
+  document.querySelectorAll(".df").forEach(b=>b.classList.toggle("sel",b.dataset.d===d));
+  const seg=document.getElementById("segbox");
+  if(d==="all"){
+    const pts=[]; PINS.forEach(p=>{ pts.push([p.lat,p.lon]); addPin(jit({lat:p.lat,lon:p.lon,cat:p.cat,img:p.img,name:p.l,q:p.q})); });
+    allAdds().forEach(p=>{ if(p.lat){ pts.push([p.lat,p.lon]); addPin(jit({lat:p.lat,lon:p.lon,cat:"sight",name:p.n,q:p.q})); } });
+    const city=pts.filter(p=>p[0]>33.54&&p[0]<33.63&&p[1]>130.35&&p[1]<130.44);
+    BIGMAP.fitBounds(city.length?city:pts,{padding:[26,26]}); if(seg) seg.innerHTML="";
+  } else {
+    const sq=dayseq(d), pts=[], groups={};
+    sq.forEach((p,i)=>{ const key=p.q||(p.lat.toFixed(5)+","+p.lon.toFixed(5)); if(!groups[key]) groups[key]={lat:p.lat,lon:p.lon,cat:p.cat,img:p.img,q:p.q,nums:[],names:[]}; const g=groups[key]; g.nums.push(i+1); g.names.push(p.name); });
+    Object.values(groups).forEach(g=>{ pts.push([g.lat,g.lon]); addPin(jit({lat:g.lat,lon:g.lon,cat:g.cat,img:g.img,q:g.q,name:g.names.join(" · ")}),g.nums.join("·")); });
+    if(sq.length>1) L.polyline(sq.map(p=>[p.lat,p.lon]),{color:"#0f766e",weight:3,opacity:.5,dashArray:"5 6"}).addTo(routeLayer);
+    if(pts.length) BIGMAP.fitBounds(pts,{padding:[44,44]});
+    if(seg){
+      if(sq.length<2){ seg.innerHTML=`<div class="rp-hint">${d}일 — 지도 표시 위치 ${sq.length}곳</div>`; }
+      else { seg.innerHTML=`<div class="rp-hint"><b>${d}일</b> 구간 클릭 → 경로(대안) 표시</div>`+sq.slice(0,-1).map((p,i)=>`<button class="seg-btn" data-i="${i}">${i+1}. ${p.name} → ${sq[i+1].name}</button>`).join("");
+        seg.querySelectorAll(".seg-btn").forEach(btn=>btn.addEventListener("click",()=>routeBetween(sq[+btn.dataset.i],sq[+btn.dataset.i+1]))); }
+    }
+  }
+}
+async function routeBetween(a,b){
+  const gurl=`https://www.google.com/maps/dir/?api=1&travelmode=transit&origin=${enc(a.q)}&destination=${enc(b.q)}`;
+  const gl=document.getElementById("rpG"); if(gl) gl.href=gurl;
+  const out=document.getElementById("rpOut"); if(out) out.innerHTML="경로 계산 중…"; routeLayer.clearLayers();
+  try{
+    const u=`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=full&geometries=geojson`;
+    const j=await (await fetch(u)).json();
+    if(!j.routes||!j.routes.length){ if(out) out.innerHTML="경로 계산 실패 — ‘구글 대중교통’ 버튼을 이용하세요."; return; }
+    const rt=j.routes[0], km=rt.distance/1000, walkMin=Math.max(1,Math.round(km/4.8*60)), taxiMin=Math.max(1,Math.round(rt.duration/60));
+    const near=km<1.5, ll=rt.geometry.coordinates.map(c=>[c[1],c[0]]);
+    function draw(color){ routeLayer.clearLayers(); const pl=L.polyline(ll,{color,weight:6,opacity:.9}).addTo(routeLayer); BIGMAP.fitBounds(pl.getBounds(),{padding:[34,34]}); }
+    function pick(m){ out.querySelectorAll(".mode-opt").forEach(e=>e.classList.toggle("sel",e.dataset.m===m)); if(m==="walk") draw("#0f766e"); else if(m==="taxi") draw("#1f2a37"); else window.open(gurl,"_blank"); }
+    if(out){
+      out.innerHTML=`<div class="rp-hint">${a.name||a.l} → ${b.name||b.l} · 거리 약 ${km.toFixed(1)}km · <b style="color:var(--teal-ink)">${near?"근거리 → 도보 추천":"장거리 → 대중교통 추천"}</b></div>`
+        +`<button class="mode-opt ${near?"sel rec":""}" data-m="walk">🚶 도보 · ${km.toFixed(1)}km · 약 ${walkMin}분</button>`
+        +`<button class="mode-opt ${!near?"rec":""}" data-m="transit">🚇 대중교통(지하철·버스) · 구글에서 대안 보기·선택 →</button>`
+        +`<button class="mode-opt" data-m="taxi">🚕 택시·차 · ${km.toFixed(1)}km · 약 ${taxiMin}분</button>`;
+      out.querySelectorAll(".mode-opt").forEach(btn=>btn.addEventListener("click",()=>pick(btn.dataset.m)));
+    }
+    if(near) draw("#0f766e");
+  }catch(e){ if(out) out.innerHTML="경로 계산 실패 — ‘구글 대중교통’ 버튼을 이용하세요."; }
+}
+function fillRouteUI(){
+  const host=document.getElementById("mapctrl"); if(!host) return;
+  const dayBtns=`<div class="dayfilter"><button class="df sel" data-d="all">전체</button>`+["15","16","17","18","19","20"].map(d=>`<button class="df" data-d="${d}">${d}일</button>`).join("")+`</div>`;
+  const opts=PINS.map((p,i)=>`<option value="${i}">${p.l}</option>`).join("");
+  host.innerHTML=`<div class="mc-sec">📅 일자별 보기 <span>일자 누르면 그날 핀·경로</span></div>${dayBtns}<div id="segbox"></div>
+    <div class="mc-sec">🔀 두 지점 경로 찾기</div>
+    <div class="rp-row"><select id="rpFrom">${opts}</select><span class="rp-arrow">→</span><select id="rpTo">${opts}</select></div>
+    <div class="rp-row"><button id="rpGo">경로 찾기</button><a id="rpG" class="rpglink" target="_blank" rel="noopener" href="#">구글 대중교통</a></div>
+    <div id="rpOut" class="rp-out"></div>
+    <div class="rp-hint">핀: <b style="color:#0b5a54">숙소</b>·<b style="color:#ef6f5a">음식</b>·<b style="color:#2f7fd1">관광</b>·<b style="color:#7b59d1">쇼핑</b> · 식당 핀은 대략(팝업 ‘구글맵’이 정확)</div>`;
+  host.querySelectorAll(".df").forEach(b=>b.addEventListener("click",()=>setFilter(b.dataset.d)));
+  document.getElementById("rpGo").addEventListener("click",()=>routeBetween(PINS[+document.getElementById("rpFrom").value],PINS[+document.getElementById("rpTo").value]));
+  document.getElementById("rpFrom").value="0"; document.getElementById("rpTo").value="2";
+}
 
-  let h = mapcard + `<div class="intro">📍 장소마다 <b>지도</b>·<b>길찾기</b>(숙소 출발) · 동그라미로 완료 체크 · 사진 탭하면 확대. 교통편은 확인된 것만 표기.</div>`;
+/* ===== 일정: 추가(인터넷 검색)·시간설정·드래그 ===== */
+let ADDUI=null, TIMEUI=null;
+function addsFor(d){ return (STATE.adds&&STATE.adds[d])?STATE.adds[d]:[]; }
+function allAdds(){ let r=[]; if(STATE.adds){ Object.values(STATE.adds).forEach(a=>r=r.concat(a)); } return r; }
+function mergedStops(day){
+  const base=day.stops.map((s,i)=>({...s,_i:i,_key:"b"+i,order:i}));
+  const adds=addsFor(day.d).map(a=>({...a,_add:true,_key:a.id}));
+  const all=base.concat(adds), ord=STATE.order&&STATE.order[day.d];
+  if(ord){ const m={}; all.forEach(s=>m[s._key]=s); const res=ord.map(k=>m[k]).filter(Boolean); all.forEach(s=>{ if(ord.indexOf(s._key)<0) res.push(s); }); return res; }
+  return all.sort((x,y)=>(x.order!=null?x.order:999)-(y.order!=null?y.order:999));
+}
+function timeOf(st){ const t=STATE.times&&STATE.times[st._key]; return t||(st._add?"":st.t)||""; }
+function timeOpts(cur){ let o=`<option value="">(기본)</option>`; for(let m=360;m<=1440;m+=30){ const v=String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0"); o+=`<option value="${v}"${v===cur?" selected":""}>${v}</option>`; } return o; }
+function timeCell(st){
+  const t=timeOf(st);
+  if(TIMEUI===st._key) return `<div class="tltime editing"><select class="js-timesel" data-k="${st._key}">${timeOpts(/^\d\d:\d\d$/.test(t)?t:"")}</select></div>`;
+  return `<div class="tltime js-time" data-k="${st._key}" title="시간 설정">${t||(st._add?"추가":"·")} ⏱</div>`;
+}
+function gapHTML(d,pos){
+  return (ADDUI&&ADDUI.d===d&&ADDUI.pos===pos)
+    ? `<div class="addform"><input id="addInput" class="addinput" placeholder="장소명·주소 (예: 후쿠오카타워)"/><div class="addrow"><button class="js-addgo" data-d="${d}" data-pos="${pos}">🔎 검색</button><button class="js-addcancel">취소</button></div><div id="addResults" class="addres"></div></div>`
+    : `<button class="js-add addbtn" data-d="${d}" data-pos="${pos}">＋ 일정 추가</button>`;
+}
+function stopHTML(st,day){
+  if(st._add){
+    const cat=st.cat?`<span class="catbadge">${catKo(st.cat)}</span>`:"";
+    const desc=st.desc?(st.desc.length>90?st.desc.slice(0,90)+"…":st.desc):(st.disp||"검색해 추가한 장소");
+    const photo=st.imgurl?`<div class="tlphoto" data-full="${st.imgurl}"><img loading="lazy" src="${st.imgurl}" alt=""></div>`:"";
+    return `<div class="tlstop add" data-key="${st._key}"><div class="tlrow"><span class="draghandle">⠿</span>${timeCell(st)}
+        <div class="tlbody"><div class="tlname${st.q?" js-focus":""}" data-q="${st.q||''}">${st._num?`<span class="numbadge">${st._num}</span>`:""}${st.n}<span class="st-tag und">추가</span>${cat}</div>
+          <div class="tldesc">${desc}</div>
+          <div class="tlacts">${mapLink(st.q)}${dirLink(st.q)}<button class="js-del delbtn" data-d="${day.d}" data-id="${st.id}">삭제</button></div>
+        </div>${photo}</div></div>`;
+  }
+  const id=`stop-${day.d}-${st._i}`, base=day.stops, prev=st._i>0?base[st._i-1]:null;
+  return `<div class="tlstop" data-stop data-key="${st._key}" data-id="${id}">
+    <div class="tlrow"><span class="draghandle">⠿</span>${timeCell(st)}
+      <div class="tlbody">
+        <div class="tlname${st.q?" js-focus":""}" data-q="${st.q||''}">${st._num?`<span class="numbadge">${st._num}</span>`:""}${st.n}${stTag(st.tag)}</div>
+        ${(st.s||DESC[st.q])?`<div class="tldesc">${st.s||DESC[st.q]}</div>`:""}
+        ${st.move ? renderMove(st.move) : (prev && prev.q && st.q ? `<a class="movebtn alt" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&travelmode=transit&origin=${enc(prev.q)}&destination=${enc(st.q)}">${TRAIN}${prev.n}에서 길찾기</a>` : "")}
+        ${st.festival?`<div class="callout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><div><b>이동</b> — 하카타→고쿠라 신칸센 약 15~18분(일요일 운행) 또는 특급 소닉 약 40~50분 · 小倉역→고쿠라성 도보 약 15분 · 정확한 시각은 당일 확인.</div></div>`:""}
+        <div class="tlacts"><button class="toggle js-toggle" data-id="${id}" data-target=".tlstop" aria-label="완료">${CK}</button>${mapLink(st.q)}${st.dir?dirLink(st.q):""}</div>
+        ${mallTree(st.q)}${(st.malls||[]).map(mallTree).join("")}
+      </div>
+      ${st.img && IMG[st.img] ? `<div class="tlphoto" data-full="img/${IMG[st.img][0]}"><img loading="lazy" src="img/${IMG[st.img][0]}" alt=""></div>` : ""}
+    </div></div>`;
+}
+function renderPlan(){
+  let mapcard = `<div class="card"><div class="note" style="margin:0">🗺 <b>여행 지도</b>는 화면 오른쪽(모바일은 우하단 <b>‘지도’</b> 버튼)에 — 핀·일자필터·경로찾기가 거기 있어요.</div></div>`;
+  let h = mapcard + `<div class="intro">📍 장소마다 지도·길찾기 · 완료 체크 · 사진 탭 확대 · <b>＋일정 추가</b>로 사이에 새 장소(인터넷 검색).</div>`;
   DAYS.forEach(day=>{
     h += `<div class="card day" style="--c:var(${day.c})">
       <div class="day-head"><span class="dnum">${day.d}일</span><span class="dlab">7/${day.d} (${day.dow})</span></div>
-      <div class="day-mem">${day.mem}</div><div class="tl">`;
-    day.stops.forEach((st,si)=>{
-      const id = `stop-${day.d}-${si}`;
-      const prev = si>0 ? day.stops[si-1] : null;
-      h += `<div class="tlstop" data-stop data-id="${id}">
-        <div class="tlrow">
-          <div class="tltime">${st.t||""}</div>
-          <div class="tlbody">
-            <div class="tlname">${st.n}${stTag(st.tag)}</div>
-            ${st.s?`<div class="tldesc">${st.s}</div>`:""}
-            ${st.move ? renderMove(st.move) : (prev && prev.q && st.q ? `<a class="movebtn alt" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&travelmode=transit&origin=${enc(prev.q)}&destination=${enc(st.q)}">${TRAIN}${prev.n}에서 길찾기</a>` : "")}
-            ${st.festival?`<div class="callout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><div><b>이동</b> — 하카타→고쿠라 신칸센 약 15~18분(일요일 운행) 또는 특급 소닉 약 40~50분 · 小倉역→고쿠라성 도보 약 15분 · 정확한 시각은 당일 확인.</div></div>`:""}
-            <div class="tlacts">${thumb1(st.img)}${mapLink(st.q)}${st.dir?dirLink(st.q):""}</div>
-          </div>
-          <button class="toggle js-toggle" data-id="${id}" data-target=".tlstop" aria-label="완료">${CK}</button>
-        </div></div>`;
-    });
+      <div class="day-mem">${day.mem}</div><div class="tl" data-day="${day.d}">`;
+    const ms=mergedStops(day);
+    let _n=0; ms.forEach(s=>{ const hc=s._add?!!s.lat:(s.q&&COORD[s.q]); s._num=hc?++_n:0; });
+    h += gapHTML(day.d, -1);
+    ms.forEach((st,si)=>{ h += stopHTML(st,day); h += gapHTML(day.d, si); });
     h += `</div>${day.note?`<div class="note" style="padding-left:6px">${day.note}</div>`:""}</div>`;
   });
   $("#tab-plan").innerHTML = h;
-  const wp = stops.map(s=>enc(s.q)).join("|");
-  $("#grouteBtn").href = "https://www.google.com/maps/dir/?api=1&travelmode=walking&origin="+enc(ACCOM)+"&destination="+enc(ACCOM)+"&waypoints="+wp;
+  initDrag();
 }
+function rerenderPlan(){ renderPlan(); applyState(); }
+function refreshMap(){ if(BIGMAP) setFilter(CURDAY||"all"); if(typeof renderOver==="function") renderOver(); }
+function initDrag(){
+  if(typeof Sortable==="undefined") return;
+  document.querySelectorAll("#tab-plan .tl").forEach(tl=>{
+    Sortable.create(tl,{handle:".draghandle",draggable:".tlstop",animation:150,onEnd:()=>{
+      const d=tl.dataset.day, keys=[...tl.querySelectorAll(".tlstop")].map(e=>e.dataset.key);
+      STATE.order=STATE.order||{}; STATE.order[d]=keys; save(); rerenderPlan(); refreshMap();
+    }});
+  });
+}
+async function doGeocode(d,order){
+  const inp=document.getElementById("addInput"), box=document.getElementById("addResults");
+  const qv=((inp&&inp.value)||"").trim(); if(!qv){ if(box) box.innerHTML="<div class='rp-hint'>장소명을 입력하세요.</div>"; return; }
+  const esc=s=>s.replace(/"/g,"&quot;");
+  box.innerHTML="<div class='rp-hint'>검색 중…</div>";
+  try{
+    const u="https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&accept-language=ko&countrycodes=jp&q="+encodeURIComponent(qv);
+    const arr=await (await fetch(u,{headers:{"Accept":"application/json"}})).json();
+    let h=(arr&&arr.length)?arr.map(r=>`<button class="js-addres addresbtn" data-d="${d}" data-pos="${order}" data-name="${esc(qv)}" data-q="${esc(qv)}" data-lat="${r.lat}" data-lon="${r.lon}" data-cat="${esc(r.type||r.category||'')}" data-disp="${esc(r.display_name||'')}">📍 ${r.display_name}</button>`).join(""):"";
+    h+=`<button class="js-addres addresbtn nogeo" data-d="${d}" data-pos="${order}" data-name="${esc(qv)}" data-q="${esc(qv)}" data-lat="" data-lon="" data-cat="" data-disp="">‘${qv}’ 그대로 추가(지도 핀 없이)</button>`;
+    box.innerHTML=h;
+  }catch(e){ box.innerHTML=`<button class="js-addres addresbtn nogeo" data-d="${d}" data-pos="${order}" data-name="${esc(qv)}" data-q="${esc(qv)}" data-lat="" data-lon="">검색 실패 — ‘${qv}’ 그대로 추가</button>`; }
+}
+function catKo(t){ const m={restaurant:"음식점",cafe:"카페",fast_food:"패스트푸드",bar:"바",pub:"펍",park:"공원",garden:"정원",museum:"박물관",attraction:"명소",hotel:"숙소",station:"역",mall:"쇼핑몰",supermarket:"마트",convenience:"편의점",shop:"상점",temple:"사원",shrine:"신사",viewpoint:"전망대",department_store:"백화점",artwork:"예술",aquarium:"수족관",zoo:"동물원",theme_park:"테마파크"}; return m[t]||t; }
+async function addStop(d,pos,name,q,lat,lon,cat,disp){
+  const day=DAYS.find(x=>x.d===d); const keys=mergedStops(day).map(s=>s._key);
+  STATE.adds=STATE.adds||{}; STATE.adds[d]=STATE.adds[d]||[];
+  const o={id:"a"+(STATE._seq=(STATE._seq||0)+1),n:name,q};
+  if(lat&&lon){ o.lat=+lat; o.lon=+lon; } if(cat) o.cat=cat; if(disp) o.disp=disp;
+  STATE.adds[d].push(o);
+  keys.splice(pos+1,0,o.id); STATE.order=STATE.order||{}; STATE.order[d]=keys;
+  save(); ADDUI=null; rerenderPlan(); refreshMap(); toast("추가됨: "+name);
+  for(const lang of ["ja","ko","en"]){
+    try{ const s=await fetch("https://"+lang+".wikipedia.org/api/rest_v1/page/summary/"+encodeURIComponent(name)).then(r=>r.ok?r.json():null);
+      if(s&&s.extract&&s.type!=="disambiguation"){ o.desc=s.extract; if(s.thumbnail&&s.thumbnail.source) o.imgurl=s.thumbnail.source; save(); rerenderPlan(); break; }
+    }catch(e){}
+  }
+}
+function delAdd(d,id){ if(STATE.adds&&STATE.adds[d]){ STATE.adds[d]=STATE.adds[d].filter(a=>a.id!==id); if(STATE.order&&STATE.order[d]) STATE.order[d]=STATE.order[d].filter(k=>k!==id); save(); rerenderPlan(); refreshMap(); toast("삭제됨"); } }
 
 function renderItems(target, GROUPS, prefix){
   let h = `<div class="intro">⭐ 가고 싶은 곳에 별 표시 · 지도 버튼으로 위치 · 사진 탭하면 확대.</div>`;
@@ -540,7 +834,7 @@ function renderItems(target, GROUPS, prefix){
       const tag = it.t==="hi"?`<span class="tag hi">강추</span>`:it.t==="no"?`<span class="tag no">제외</span>`:"";
       const star = it.t!=="no" ? `<button class="ic-star js-toggle" data-id="${id}" aria-label="가고싶음">★</button>` : `<span style="width:30px;flex:none"></span>`;
       h += `<div class="item">${star}<div class="it-body">
-        <div class="it-name">${it.n}${tag}</div>${it.sub?`<div class="it-sub">${it.sub}</div>`:""}
+        <div class="it-name">${it.n}${tag}</div>${it.d?`<div class="it-desc">${it.d}</div>`:""}${it.sub?`<div class="it-sub">${it.sub}</div>`:""}
         ${it.q?`<div style="margin-top:7px">${mapLink(it.q)}</div>`:""}${gallery(it.img)}${mallTree(it.q)}</div></div>`;
     });
     h += `</div>`;
@@ -604,7 +898,7 @@ function renderInfo(){
 const KEY = "fukuoka2026.v3";
 let STATE = {};
 try{ STATE = JSON.parse(localStorage.getItem(KEY) || "{}"); }catch(e){ STATE = {}; }
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(STATE)); }catch(e){} }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(STATE)); }catch(e){} sbPush(); }
 function applyState(){
   document.querySelectorAll(".js-toggle, .js-check").forEach(el=>{
     let on = !!STATE[el.dataset.id];
@@ -614,6 +908,15 @@ function applyState(){
   });
 }
 document.addEventListener("click", e=>{
+  const _add=e.target.closest(".js-add"); if(_add){ ADDUI={d:_add.dataset.d, pos:+_add.dataset.pos}; TIMEUI=null; rerenderPlan(); const i=document.getElementById("addInput"); if(i) i.focus(); return; }
+  if(e.target.closest(".js-addcancel")){ ADDUI=null; rerenderPlan(); return; }
+  const _go=e.target.closest(".js-addgo"); if(_go){ doGeocode(_go.dataset.d,+_go.dataset.pos); return; }
+  const _res=e.target.closest(".js-addres"); if(_res){ addStop(_res.dataset.d,+_res.dataset.pos,_res.dataset.name,_res.dataset.q,_res.dataset.lat,_res.dataset.lon,_res.dataset.cat,_res.dataset.disp); return; }
+  const _del=e.target.closest(".js-del"); if(_del){ delAdd(_del.dataset.d,_del.dataset.id); return; }
+  const _tm=e.target.closest(".js-time"); if(_tm){ TIMEUI=_tm.dataset.k; ADDUI=null; rerenderPlan(); return; }
+  const _fb=e.target.closest(".floorbtn"); if(_fb){ const mall=_fb.closest(".mall"); if(mall){ const fv=mall.querySelector(".floorview"); if(fv) fv.innerHTML=floorView(_fb.dataset.mq,+_fb.dataset.fi); mall.querySelectorAll(".floorbtn").forEach(b=>b.classList.toggle("sel",b===_fb)); } return; }
+  const _foc=e.target.closest(".js-focus"); if(_foc&&_foc.dataset.q){ focusPlace(_foc.dataset.q); return; }
+  const _md=e.target.closest(".js-memodel"); if(_md){ STATE.memos=(STATE.memos||[]).filter(m=>m.id!==_md.dataset.id); save(); renderMemo(); return; }
   const el = e.target.closest(".js-toggle, .js-check");
   if(el){ STATE[el.dataset.id] = !el.classList.contains("is-on"); save(); applyState(); return; }
   const th = e.target.closest("[data-full]");
@@ -621,6 +924,10 @@ document.addEventListener("click", e=>{
   if(e.target.closest("#lb")){ $("#lb").classList.remove("show"); return; }
   const cp = e.target.closest(".copy");
   if(cp){ const t=cp.dataset.copy; (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("복사됨: "+t)).catch(()=>toast(t)); }
+});
+document.addEventListener("change", e=>{
+  const ts=e.target.closest(".js-timesel");
+  if(ts){ STATE.times=STATE.times||{}; const k=ts.dataset.k, v=ts.value; if(v) STATE.times[k]=v; else delete STATE.times[k]; TIMEUI=null; save(); rerenderPlan(); refreshMap(); }
 });
 
 /* ===================== 지도 (깔끔 · 연결선 없음) ===================== */
@@ -643,9 +950,34 @@ function setDday(){ try{ const now=new Date(),today=new Date(now.getFullYear(),n
 let toastTimer; function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),1600); }
 $("#resetBtn").addEventListener("click", ()=>{ if(confirm("초기화할까요?")){ const tab=STATE.__tab; STATE={}; if(tab)STATE.__tab=tab; save(); applyState(); toast("초기화 완료"); } });
 
-renderOver(); renderPlan(); renderItems($("#tab-food"),FOOD,"food"); renderItems($("#tab-place"),PLACES,"place"); renderDecide(); renderPack(); renderInfo();
-buildNav(); applyState(); setDday(); initMap();
+function renderMemo(){
+  const esc=s=>(s||"").replace(/</g,"&lt;");
+  const list=(STATE.memos||[]).map(m=>`<div class="memo-item"><div class="memo-h"><b>${esc(m.who)||"익명"}</b><button class="js-memodel delbtn" data-id="${m.id}">삭제</button></div><div class="memo-t">${esc(m.text)}</div></div>`).join("");
+  $("#tab-memo").innerHTML=`<div class="intro">각자 가고 싶은 곳·먹고 싶은 것·요청을 자유롭게 적어요.<br>☁ 실시간 동기화 — 적으면 모두에게 바로 공유됩니다.</div>
+    <div class="card"><input id="memoWho" class="addinput" placeholder="이름(선택)" style="margin-bottom:7px"><textarea id="memoText" class="memo-input" placeholder="예: 19일 저녁은 야타이 가고 싶어요 / 라멘 한 번은 꼭!"></textarea><button id="memoAdd" class="bigbtn" style="margin-top:9px">＋ 메모 추가</button></div>
+    ${list?`<div class="card">${list}</div>`:`<div class="note" style="text-align:center;padding:14px">아직 메모가 없어요. 위에 적어보세요.</div>`}`;
+  const a=$("#memoAdd"); if(a) a.addEventListener("click",()=>{ const t=($("#memoText").value||"").trim(); if(!t){ toast("내용을 적어주세요"); return; } STATE.memos=STATE.memos||[]; STATE.memos.unshift({id:"m"+(STATE._seq=(STATE._seq||0)+1),who:($("#memoWho").value||"").trim(),text:t}); save(); renderMemo(); toast("메모 추가됨"); });
+}
+/* ===== 실시간 동기화 (Supabase) ===== */
+const SB_URL="https://diqdtagnoevjljapsdnh.supabase.co";
+const SB_KEY="sb_publishable_dWJgI5gYMyDXQhjrYrZvFg_1ks5gLc9";
+let sb=null, sbReady=false, lastSync="", pushTimer=null;
+function renderAll(){ renderOver(); renderPlan(); renderItems($("#tab-food"),FOOD,"food"); renderItems($("#tab-place"),PLACES,"place"); renderDecide(); renderPack(); renderInfo(); renderMemo(); applyState(); if(BIGMAP) setFilter(CURDAY||"all"); }
+function adoptRemote(r){ lastSync=JSON.stringify(r); const tab=STATE.__tab; STATE=Object.assign({},r); if(tab)STATE.__tab=tab; try{localStorage.setItem(KEY,JSON.stringify(STATE));}catch(e){} renderAll(); }
+function sbPush(){ if(!sb||!sbReady) return; clearTimeout(pushTimer); pushTimer=setTimeout(async()=>{ const c={...STATE}; delete c.__tab; lastSync=JSON.stringify(c); try{ await sb.from("trip_state").update({data:c,updated_at:new Date().toISOString()}).eq("id","fukuoka"); }catch(e){} },600); }
+async function sbInit(){
+  if(typeof supabase==="undefined") return;
+  try{ sb=supabase.createClient(SB_URL,SB_KEY); sbReady=true; }catch(e){ return; }
+  try{ const {data}=await sb.from("trip_state").select("data").eq("id","fukuoka").maybeSingle(); const r=data&&data.data; if(r&&Object.keys(r).length) adoptRemote(r); else sbPush(); }catch(e){}
+  try{ sb.channel("trip-fukuoka").on("postgres_changes",{event:"*",schema:"public",table:"trip_state",filter:"id=eq.fukuoka"},p=>{ const r=p&&p.new&&p.new.data; if(r){ const rs=JSON.stringify(r); if(rs!==lastSync) adoptRemote(r); } }).subscribe(s=>{ if(s==="SUBSCRIBED") toast("실시간 동기화 ON"); }); }catch(e){}
+}
+renderOver(); renderPlan(); renderItems($("#tab-food"),FOOD,"food"); renderItems($("#tab-place"),PLACES,"place"); renderDecide(); renderPack(); renderInfo(); renderMemo();
+buildNav(); applyState(); setDday(); buildBigMap(); fillRouteUI();
+document.getElementById("mapOpen").addEventListener("click",()=>{document.getElementById("mappane").classList.add("open"); if(BIGMAP) setTimeout(()=>BIGMAP.invalidateSize(),220);});
+document.getElementById("mapClose").addEventListener("click",()=>document.getElementById("mappane").classList.remove("open"));
 activate(STATE.__tab && NAV.some(n=>n.id===STATE.__tab) ? STATE.__tab : "over");
+setTimeout(()=>{ if(BIGMAP) BIGMAP.invalidateSize(); },350);
+sbInit();
 </script>
 </body>
 </html>
