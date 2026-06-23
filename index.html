@@ -128,7 +128,20 @@
   .idel{flex:none;border:0;background:#f2efee;color:#b0453a;width:24px;height:24px;border-radius:50%;font-size:12px;font-weight:800;cursor:pointer;align-self:flex-start;margin-left:6px;}
   .idel:active{background:#fbe3df;}
   .dec-top{display:flex;align-items:flex-start;gap:8px;} .dec-top .check{flex:1;}
-  .udadd{padding:12px;}
+  .udadd{padding:12px;} .udadd .udtitle{font-size:13px;font-weight:800;color:var(--teal-ink);margin-bottom:8px;}
+  /* 글자 키움 */
+  .sec-title{font-size:15px;} .intro{font-size:13.5px;}
+  .tlname{font-size:15.5px;} .tldesc{font-size:13.5px;}
+  .it-name{font-size:16px;} .it-sub{font-size:12.5px;} .it-desc{font-size:14px;}
+  .ck-name{font-size:15.5px;} .ck-sub{font-size:13px;}
+  .kv{font-size:14px;} .legend{font-size:12.5px;} .day-head .dnum{font-size:19px;} .day-mem{font-size:13px;}
+  .mlink{font-size:12.5px;} .opt{font-size:13px;} .memo-t{font-size:14.5px;}
+  header.app h1{font-size:21px;} header.app .meta{font-size:13.5px;}
+  /* 한눈에 칸 키움(글 안 짤리게) */
+  .g-track{height:74px;} .gantt-day{margin:10px 0;}
+  .g-block{top:5px;bottom:5px;align-items:flex-start;padding:4px 6px;}
+  .g-block span{white-space:normal;font-size:10px;line-height:1.2;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;}
+  .g-label{width:52px;font-size:13px;}
   .tag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle;}
   .tag.hi{background:#fde9e6;color:#c0432e;} .tag.mid{background:#eef1ee;color:#5b6672;} .tag.no{background:#f0f0f0;color:#999;text-decoration:line-through;}
 
@@ -552,7 +565,7 @@ function renderOver(){
       if(!r){ const s=cursor!=null?cursor:10; r=[s,s+1.3]; }
       if(cursor!=null && r[0]<cursor){ const d=r[1]-r[0]; r=[cursor,cursor+d]; }
       cursor=r[1];
-      const left=(r[0]-AX0)/span*100, w=Math.max((r[1]-r[0])/span*100,3.5);
+      const left=(r[0]-AX0)/span*100, w=Math.max((r[1]-r[0])/span*100,6);
       blocks+=`<div class="g-block" style="left:${left}%;width:${w}%;background:${st.tag?TAGCOLOR[st.tag]:(st._add?'#16a34a':'#9aa3ad')}"><span>${st.n}</span></div>`;
     });
     rows+=`<div class="gantt-day"><div class="g-label" style="color:var(${day.c})">${day.d}일<br><span>${day.dow}</span></div><div class="g-track">${hours.map(h=>`<span class="g-grid" style="left:${(h-AX0)/span*100}%"></span>`).join("")}${blocks}</div></div>`;
@@ -563,8 +576,19 @@ function renderOver(){
       ${rows}
       <div class="note" style="margin-top:10px">막대 위치·길이는 <b>대략값</b> ([고정] 시간만 정확) · 빈 구간 = 여유 · 자세한 건 ‘일정’ 탭</div>
       <div class="legend"><span style="color:#1f2a37;font-weight:900">■</span>고정 <span style="color:#0f766e;font-weight:900">■</span>확정 <span style="color:#9aa3ad;font-weight:900">■</span>초안 <span style="color:#e0a700;font-weight:900">■</span>미정/확인</div>
+    </div>
+    <div class="card"><div class="mc-sec" style="margin-top:0">＋ 시간표에 직접 추가 <span>겹치면 거부됨</span></div>
+      <div class="rp-row">
+        <select id="gaDay">${DAYS.map(d=>`<option value="${d.d}">${d.d}일</option>`).join("")}</select>
+        <select id="gaStart">${(()=>{let o="";for(let mm=360;mm<=1410;mm+=30){const v=String(Math.floor(mm/60)).padStart(2,"0")+":"+String(mm%60).padStart(2,"0");o+=`<option>${v}</option>`;}return o;})()}</select>
+        <select id="gaDur"><option value="30">30분</option><option value="60" selected>1시간</option><option value="90">1시간반</option><option value="120">2시간</option></select>
+      </div>
+      <div class="rp-row"><input id="gaText" class="addinput" placeholder="내용 (예: 카페 휴식)"><button class="js-ganttadd" style="flex:none;background:var(--teal);color:#fff;border:0;border-radius:8px;padding:9px 14px;font-weight:800;cursor:pointer">추가</button></div>
+      <div class="rp-hint">그 시간대에 이미 일정이 있으면 추가되지 않습니다 · 추가하면 ‘일정’에도 들어갑니다.</div>
     </div>`;
 }
+function overlaps(d,start,dur){ const day=DAYS.find(x=>x.d===d); if(!day) return false; const e=start+dur/60; return mergedStops(day).some(s=>{ const m=/^(\d\d):(\d\d)$/.exec(timeOf(s)); if(!m) return false; const h=+m[1]+(+m[2])/60; return start<h+1 && e>h; }); }
+function addTimedStop(d,startStr,text){ const day=DAYS.find(x=>x.d===d); STATE.adds=STATE.adds||{}; STATE.adds[d]=STATE.adds[d]||[]; const keys=mergedStops(day).map(s=>s._key); const id="a"+(STATE._seq=(STATE._seq||0)+1); STATE.adds[d].push({id,n:text,q:""}); STATE.order=STATE.order||{}; STATE.order[d]=keys.concat(id); STATE.times=STATE.times||{}; STATE.times[id]=startStr; save(); renderAll(); toast(d+"일 "+startStr+" 추가됨"); }
 
 /* 쇼핑몰/백화점 층별 트리 + 도면 (공식 확인분만) */
 const MALL = {
@@ -673,6 +697,7 @@ function setFilter(d){
   if(d==="all"){
     const pts=[]; PINS.forEach(p=>{ pts.push([p.lat,p.lon]); addPin(jit({lat:p.lat,lon:p.lon,cat:p.cat,img:p.img,name:p.l,q:p.q})); });
     allAdds().forEach(p=>{ if(p.lat){ pts.push([p.lat,p.lon]); addPin(jit({lat:p.lat,lon:p.lon,cat:"sight",name:p.n,q:p.q})); } });
+    [].concat((STATE.ud&&STATE.ud.food)||[],(STATE.ud&&STATE.ud.place)||[]).forEach(p=>{ if(p.lat&&!(STATE.del&&STATE.del[p.id])){ pts.push([p.lat,p.lon]); addPin(jit({lat:p.lat,lon:p.lon,cat:p.cat||"food",name:p.n,q:p.q})); } });
     const city=pts.filter(p=>p[0]>33.54&&p[0]<33.63&&p[1]>130.35&&p[1]<130.44);
     BIGMAP.fitBounds(city.length?city:pts,{padding:[26,26]}); if(seg) seg.innerHTML="";
   } else {
@@ -830,7 +855,25 @@ async function addStop(d,pos,name,q,lat,lon,cat,disp){
 }
 function delAdd(d,id){ if(STATE.adds&&STATE.adds[d]){ STATE.adds[d]=STATE.adds[d].filter(a=>a.id!==id); if(STATE.order&&STATE.order[d]) STATE.order[d]=STATE.order[d].filter(k=>k!==id); save(); rerenderPlan(); refreshMap(); toast("삭제됨"); } }
 
-function udAddRow(prefix){ return `<div class="card udadd"><input class="addinput" id="udin_${prefix}" placeholder="직접 추가 (이름)"><button class="js-udadd bigbtn" data-prefix="${prefix}" style="margin-top:8px">＋ 추가</button></div>`; }
+function udAddRow(prefix){
+  const loc=(prefix==="food"||prefix==="place");
+  const cat=(prefix==="place")?`<select id="udcat_${prefix}" class="addinput" style="margin-bottom:6px"><option value="sight">종류: 관광/체험</option><option value="food">종류: 음식</option><option value="shop">종류: 쇼핑</option></select>`:"";
+  return `<div class="card udadd"><div class="udtitle">＋ 직접 추가</div>
+    <input class="addinput" id="udn_${prefix}" placeholder="제목 (이름) *" style="margin-bottom:6px">
+    <input class="addinput" id="uds_${prefix}" placeholder="세부 내용 (설명·가격 등)" style="margin-bottom:6px">
+    ${loc?`<input class="addinput" id="udq_${prefix}" placeholder="위치 (장소명/주소 → 지도 핀)" style="margin-bottom:6px">`:""}${cat}
+    <button class="js-udadd bigbtn" data-prefix="${prefix}">＋ 추가</button></div>`;
+}
+async function udAdd(pre){
+  const g=i=>document.getElementById(i);
+  const n=((g("udn_"+pre)||{}).value||"").trim(); if(!n){ toast("제목을 적어주세요"); return; }
+  const sub=((g("uds_"+pre)||{}).value||"").trim();
+  const q=((g("udq_"+pre)||{}).value||"").trim();
+  const cel=g("udcat_"+pre); const cat=cel?cel.value:(pre==="food"?"food":"");
+  const item={id:"u"+pre+(STATE._seq=(STATE._seq||0)+1),n}; if(sub)item.sub=sub; if(q)item.q=q; if(cat)item.cat=cat;
+  if(q){ try{ const a=await (await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=jp&q="+encodeURIComponent(q))).json(); if(a&&a[0]){ item.lat=+a[0].lat; item.lon=+a[0].lon; } }catch(e){} }
+  STATE.ud=STATE.ud||{}; STATE.ud[pre]=STATE.ud[pre]||[]; STATE.ud[pre].push(item); save(); rerenderTabP(pre); if(BIGMAP) setFilter(CURDAY||"all"); toast("추가됨"+(item.lat?" · 지도 핀 ✓":""));
+}
 function tabOfId(id){ if(id.indexOf("ufood")===0||id.indexOf("food")===0) return "food"; if(id.indexOf("uplace")===0||id.indexOf("place")===0) return "place"; if(id.indexOf("udecide")===0||id.indexOf("dec")===0) return "decide"; if(id.indexOf("upack")===0||id.indexOf("pack")===0) return "pack"; return null; }
 function rerenderTabP(p){ if(p==="food") renderItems($("#tab-food"),FOOD,"food"); else if(p==="place") renderItems($("#tab-place"),PLACES,"place"); else if(p==="decide") renderDecide(); else if(p==="pack") renderPack(); applyState(); }
 function renderItems(target, GROUPS, prefix){
@@ -849,7 +892,7 @@ function renderItems(target, GROUPS, prefix){
     if(rows.length) h += `<div class="sec-title">${grp.g}</div><div class="card">`+rows.map(r=>itemHTML(r.it,r.id)).join("")+`</div>`;
   });
   const ud=((STATE.ud&&STATE.ud[prefix])||[]).filter(it=>!del[it.id]);
-  if(ud.length) h += `<div class="sec-title">직접 추가</div><div class="card">`+ud.map(it=>itemHTML({n:it.n,sub:it.sub||"",t:""},it.id)).join("")+`</div>`;
+  if(ud.length) h += `<div class="sec-title">직접 추가</div><div class="card">`+ud.map(it=>itemHTML({n:it.n,sub:it.sub||"",q:it.q||"",t:""},it.id)).join("")+`</div>`;
   h += udAddRow(prefix);
   target.innerHTML = h;
 }
@@ -863,14 +906,14 @@ function renderDecide(){
       <div class="opts">${dc.opts.map(o=>`<span class="opt">${o}</span>`).join("")}</div></div>`;
   });
   ((STATE.ud&&STATE.ud.decide)||[]).filter(it=>!del[it.id]).forEach(it=>{
-    h += `<div class="card decision"><div class="dec-top"><div class="check js-check" data-id="${it.id}"><div class="box">${CK}</div><div class="ck-body"><div class="ck-name">${it.n}</div></div></div><button class="js-itemdel idel" data-id="${it.id}" title="삭제">✕</button></div></div>`;
+    h += `<div class="card decision"><div class="dec-top"><div class="check js-check" data-id="${it.id}"><div class="box">${CK}</div><div class="ck-body"><div class="ck-name">${it.n}</div>${it.sub?`<div class="ck-sub">${it.sub}</div>`:""}</div></div><button class="js-itemdel idel" data-id="${it.id}" title="삭제">✕</button></div></div>`;
   });
   h += udAddRow("decide");
   $("#tab-decide").innerHTML = h;
 }
 function renderPack(){
   const del=STATE.del||{};
-  const row=(it,id)=>`<div class="check js-check" data-id="${id}"><div class="box">${CK}</div><div class="ck-body"><div class="ck-name">${it.n}</div>${it.s?`<div class="ck-sub">${it.s}</div>`:""}</div><button class="js-itemdel idel" data-id="${id}" title="삭제">✕</button></div>`;
+  const row=(it,id)=>`<div class="check js-check" data-id="${id}"><div class="box">${CK}</div><div class="ck-body"><div class="ck-name">${it.n}</div>${(it.s||it.sub)?`<div class="ck-sub">${it.s||it.sub}</div>`:""}</div><button class="js-itemdel idel" data-id="${id}" title="삭제">✕</button></div>`;
   let h = `<div class="intro">체크=완료(삭선) · ✕ 삭제(별도) · 아래에서 직접 추가.</div>`;
   PACK.forEach((grp,gi)=>{
     const rows=grp.items.map((it,ii)=>({it,id:`pack-${gi}-${ii}`})).filter(r=>!del[r.id]);
@@ -937,7 +980,8 @@ document.addEventListener("click", e=>{
   const _foc=e.target.closest(".js-focus"); if(_foc&&_foc.dataset.q){ focusPlace(_foc.dataset.q); return; }
   const _md=e.target.closest(".js-memodel"); if(_md){ STATE.memos=(STATE.memos||[]).filter(m=>m.id!==_md.dataset.id); save(); renderMemo(); return; }
   const _id=e.target.closest(".js-itemdel"); if(_id){ STATE.del=STATE.del||{}; STATE.del[_id.dataset.id]=1; save(); const p=tabOfId(_id.dataset.id); if(p) rerenderTabP(p); return; }
-  const _ua=e.target.closest(".js-udadd"); if(_ua){ const pre=_ua.dataset.prefix, inp=document.getElementById("udin_"+pre), v=((inp&&inp.value)||"").trim(); if(!v){ toast("이름을 적어주세요"); return; } STATE.ud=STATE.ud||{}; STATE.ud[pre]=STATE.ud[pre]||[]; STATE.ud[pre].push({id:"u"+pre+(STATE._seq=(STATE._seq||0)+1),n:v}); save(); rerenderTabP(pre); toast("추가됨"); return; }
+  const _ua=e.target.closest(".js-udadd"); if(_ua){ udAdd(_ua.dataset.prefix); return; }
+  const _ga=e.target.closest(".js-ganttadd"); if(_ga){ const dd=document.getElementById("gaDay").value, st=document.getElementById("gaStart").value, du=+document.getElementById("gaDur").value, tx=((document.getElementById("gaText")||{}).value||"").trim(); if(!tx){ toast("내용을 적어주세요"); return; } const m=/^(\d\d):(\d\d)$/.exec(st); const sh=+m[1]+(+m[2])/60; if(overlaps(dd,sh,du)){ toast("그 시간대에 이미 일정이 있어요"); return; } addTimedStop(dd,st,tx); return; }
   const el = e.target.closest(".js-toggle, .js-check");
   if(el){ STATE[el.dataset.id] = !el.classList.contains("is-on"); save(); applyState(); return; }
   const th = e.target.closest("[data-full]");
